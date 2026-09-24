@@ -240,3 +240,40 @@ def interviews(request):
         "score": interview.score,
         "created_at": interview.created_at,
     }, status=201)
+
+
+@api_view(["POST"])
+def resume_analyze(request):
+    resume = request.FILES.get("resume")
+
+    if resume is None:
+        return Response({
+            "message": "Please upload a resume file."
+        }, status=400)
+
+    allowed_extensions = (".pdf", ".doc", ".docx")
+    file_name = resume.name.lower()
+
+    if not file_name.endswith(allowed_extensions):
+        return Response({
+            "message": "Please upload a PDF, DOC, or DOCX resume."
+        }, status=400)
+
+    if resume.size > 5 * 1024 * 1024:
+        return Response({
+            "message": "Resume file must be 5 MB or smaller."
+        }, status=400)
+
+    return Response({
+        "status": "ready",
+        "file_name": resume.name,
+        "file_size": resume.size,
+        "ats_score": 0,
+        "skills": [],
+        "missing_keywords": [],
+        "suggestions": [
+            "Resume file uploaded successfully.",
+            "Detailed resume analysis will be available after text extraction is enabled.",
+        ],
+        "summary": "Resume uploaded successfully."
+    })
