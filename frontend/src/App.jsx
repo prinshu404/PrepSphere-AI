@@ -5,6 +5,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Interviews from "./pages/Interviews";
+import Resume from "./pages/Resume";
 
 import DashboardSidebar from "./components/dashboard/DashboardSidebar";
 import DashboardNavbar from "./components/dashboard/DashboardNavbar";
@@ -34,9 +35,7 @@ function FeaturePage({ title, description }) {
         <div className="dashboard-card">
           <h1>{title}</h1>
 
-          <p>
-            {description}
-          </p>
+          <p>{description}</p>
         </div>
       </section>
     </DashboardLayout>
@@ -54,17 +53,10 @@ function App() {
       {/* Dashboard */}
       <Route path="/dashboard" element={<Dashboard />} />
 
-      {/* Dashboard feature pages */}
-      <Route
-        path="/resume"
-        element={
-          <FeaturePage
-            title="Resume Analyzer"
-            description="Analyze your resume and get practical suggestions to improve it."
-          />
-        }
-      />
+      {/* Resume Analyzer */}
+      <Route path="/resume" element={<Resume />} />
 
+      {/* Mock Interviews */}
       <Route
         path="/interviews"
         element={
@@ -74,6 +66,7 @@ function App() {
         }
       />
 
+      {/* Performance */}
       <Route
         path="/reports"
         element={
@@ -84,6 +77,7 @@ function App() {
         }
       />
 
+      {/* Coding Practice */}
       <Route
         path="/coding"
         element={
@@ -94,6 +88,7 @@ function App() {
         }
       />
 
+      {/* AI Analysis */}
       <Route
         path="/emotion"
         element={
@@ -104,6 +99,7 @@ function App() {
         }
       />
 
+      {/* Career Roadmap */}
       <Route
         path="/roadmap"
         element={
@@ -114,6 +110,7 @@ function App() {
         }
       />
 
+      {/* Company Prep */}
       <Route
         path="/company-prep"
         element={
@@ -124,6 +121,7 @@ function App() {
         }
       />
 
+      {/* Placement */}
       <Route
         path="/placement"
         element={
@@ -134,6 +132,7 @@ function App() {
         }
       />
 
+      {/* Profile */}
       <Route
         path="/profile"
         element={
@@ -144,6 +143,7 @@ function App() {
         }
       />
 
+      {/* Settings */}
       <Route
         path="/settings"
         element={
