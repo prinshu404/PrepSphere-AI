@@ -1,12 +1,23 @@
 import json
 import os
 
+from dotenv import load_dotenv
 from openai import OpenAI
 
 
-client = OpenAI(
-    api_key=os.getenv("OPENAI_API_KEY")
+load_dotenv(
+    os.path.join(
+        os.path.dirname(os.path.dirname(__file__)),
+        ".env",
+    )
 )
+
+api_key = os.getenv("OPENAI_API_KEY")
+
+if not api_key:
+    raise RuntimeError("OPENAI_API_KEY is not configured.")
+
+client = OpenAI(api_key=api_key)
 
 
 def generate_mcq_questions(
@@ -38,12 +49,13 @@ Requirements:
 - Questions must be relevant to the selected subject.
 - Questions should be clear and unambiguous.
 - Do not generate duplicate questions.
+- Do not generate questions very similar to the previous questions.
 - Do not include explanations outside the JSON.
 - Return only valid JSON.
 - Use English only.
 
-Previous questions from this user/test history are listed below.
-Avoid repeating these questions or very similar questions:
+Previous questions from this user's history are listed below.
+Avoid repeating these questions:
 
 {previous_text}
 
@@ -81,7 +93,9 @@ Return this exact JSON structure:
     questions = data.get("questions")
 
     if not isinstance(questions, list):
-        raise ValueError("The AI response does not contain a valid question list.")
+        raise ValueError(
+            "The AI response does not contain a valid question list."
+        )
 
     if len(questions) != count:
         raise ValueError(
