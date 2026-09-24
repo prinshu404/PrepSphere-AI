@@ -1,4 +1,3 @@
-
 import React, { useRef, useState } from "react";
 import { Upload, FileText, X, Sparkles, CheckCircle2 } from "lucide-react";
 
@@ -121,9 +120,7 @@ const Resume = () => {
 
                   <h3>Drag and drop your resume here</h3>
 
-                  <p>
-                    or click to browse a file from your computer
-                  </p>
+                  <p>or click to browse a file from your computer</p>
 
                   <button
                     type="button"
