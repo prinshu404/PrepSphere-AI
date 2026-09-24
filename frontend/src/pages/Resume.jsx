@@ -4,6 +4,8 @@ import { Upload, FileText, X, Sparkles, CheckCircle2 } from "lucide-react";
 import DashboardSidebar from "../components/dashboard/DashboardSidebar";
 import DashboardNavbar from "../components/dashboard/DashboardNavbar";
 
+import resumeApi from "../api/resumeApi";
+
 import "../assets/css/resume.css";
 
 const Resume = () => {
@@ -12,7 +14,8 @@ const Resume = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysisComplete, setAnalysisComplete] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState(null);
+  const [error, setError] = useState("");
 
   const handleFile = (file) => {
     if (!file) return;
@@ -24,12 +27,18 @@ const Resume = () => {
     ];
 
     if (!allowedTypes.includes(file.type)) {
-      alert("Please upload a PDF or DOCX file.");
+      setError("Please upload a PDF, DOC, or DOCX file.");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setError("Resume file size must be less than 5 MB.");
       return;
     }
 
     setSelectedFile(file);
-    setAnalysisComplete(false);
+    setAnalysisResult(null);
+    setError("");
   };
 
   const handleFileChange = (event) => {
@@ -47,22 +56,96 @@ const Resume = () => {
 
   const removeFile = () => {
     setSelectedFile(null);
-    setAnalysisComplete(false);
+    setAnalysisResult(null);
+    setError("");
 
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
   };
 
-  const handleAnalyze = () => {
-    if (!selectedFile) return;
+  const handleAnalyze = async () => {
+    if (!selectedFile) {
+      setError("Please select a resume first.");
+      return;
+    }
 
     setIsAnalyzing(true);
+    setAnalysisResult(null);
+    setError("");
 
-    setTimeout(() => {
+    try {
+      const formData = new FormData();
+      formData.append("resume", selectedFile);
+
+      const response = await resumeApi.analyzeResume(formData);
+
+      setAnalysisResult(response.data);
+    } catch (err) {
+      console.error("Resume analysis error:", err);
+
+      const message =
+        err.response?.data?.error ||
+        err.response?.data?.message ||
+        "Unable to analyze the resume. Please try again.";
+
+      setError(message);
+    } finally {
       setIsAnalyzing(false);
-      setAnalysisComplete(true);
-    }, 1200);
+    }
+  };
+
+  const getValue = (obj, keys, fallback = "Not available") => {
+    for (const key of keys) {
+      if (obj?.[key] !== undefined && obj?.[key] !== null) {
+        return obj[key];
+      }
+    }
+
+    return fallback;
+  };
+
+  const atsScore = getValue(
+    analysisResult,
+    ["ats_score", "atsScore", "score"],
+    null
+  );
+
+  const skills = getValue(
+    analysisResult,
+    ["skills", "detected_skills", "detectedSkills"],
+    []
+  );
+
+  const missingKeywords = getValue(
+    analysisResult,
+    ["missing_keywords", "missingKeywords", "missing_skills"],
+    []
+  );
+
+  const suggestions = getValue(
+    analysisResult,
+    ["suggestions", "improvement_suggestions", "improvementSuggestions"],
+    []
+  );
+
+  const summary = getValue(
+    analysisResult,
+    ["summary", "overall_summary", "overallSummary"],
+    ""
+  );
+
+  const normalizeArray = (value) => {
+    if (Array.isArray(value)) return value;
+
+    if (typeof value === "string") {
+      return value
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean);
+    }
+
+    return [];
   };
 
   return (
@@ -94,6 +177,7 @@ const Resume = () => {
               <div className="resume-card-heading">
                 <div>
                   <h2>Upload your resume</h2>
+
                   <p>
                     Supported formats: PDF, DOC, and DOCX. Maximum file size:
                     5 MB.
@@ -150,6 +234,7 @@ const Resume = () => {
 
                     <div className="resume-file-info">
                       <h3>{selectedFile.name}</h3>
+
                       <p>
                         {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB
                       </p>
@@ -166,6 +251,8 @@ const Resume = () => {
                   </button>
                 </div>
               )}
+
+              {error && <p className="resume-error">{error}</p>}
 
               {selectedFile && (
                 <button
@@ -225,7 +312,7 @@ const Resume = () => {
             </div>
           </section>
 
-          {analysisComplete && (
+          {analysisResult && (
             <section className="resume-results">
               <div className="resume-results-header">
                 <div>
@@ -237,30 +324,44 @@ const Resume = () => {
                   <h2>Your Resume Insights</h2>
 
                   <p>
-                    Here is a preview of the insights generated from your
-                    uploaded resume.
+                    Here are the insights generated from your uploaded resume.
                   </p>
                 </div>
               </div>
 
+              {summary && (
+                <div className="resume-insight-card">
+                  <h3>Resume Summary</h3>
+                  <p>{summary}</p>
+                </div>
+              )}
+
               <div className="resume-result-grid">
-                <article className="resume-score-card">
-                  <span>ATS Score</span>
+                {atsScore !== null && (
+                  <article className="resume-score-card">
+                    <span>ATS Score</span>
 
-                  <strong>78%</strong>
+                    <strong>
+                      {typeof atsScore === "number"
+                        ? `${atsScore}%`
+                        : atsScore}
+                    </strong>
 
-                  <p>Good compatibility</p>
-                </article>
+                    <p>Resume compatibility score</p>
+                  </article>
+                )}
 
                 <article className="resume-insight-card">
                   <h3>Detected Skills</h3>
 
                   <div className="resume-tags">
-                    <span>Python</span>
-                    <span>React</span>
-                    <span>Django</span>
-                    <span>SQL</span>
-                    <span>Git</span>
+                    {normalizeArray(skills).length > 0 ? (
+                      normalizeArray(skills).map((skill, index) => (
+                        <span key={index}>{skill}</span>
+                      ))
+                    ) : (
+                      <span>No skills detected</span>
+                    )}
                   </div>
                 </article>
 
@@ -268,29 +369,29 @@ const Resume = () => {
                   <h3>Missing Keywords</h3>
 
                   <div className="resume-tags resume-tags--muted">
-                    <span>REST API</span>
-                    <span>Testing</span>
-                    <span>Docker</span>
+                    {normalizeArray(missingKeywords).length > 0 ? (
+                      normalizeArray(missingKeywords).map((keyword, index) => (
+                        <span key={index}>{keyword}</span>
+                      ))
+                    ) : (
+                      <span>No missing keywords found</span>
+                    )}
                   </div>
                 </article>
 
-                <article className="resume-insight-card resume-insight-card--wide">
-                  <h3>Improvement Suggestions</h3>
+                {normalizeArray(suggestions).length > 0 && (
+                  <article className="resume-insight-card resume-insight-card--wide">
+                    <h3>Improvement Suggestions</h3>
 
-                  <ul>
-                    <li>
-                      Add measurable achievements to your project
-                      descriptions.
-                    </li>
-                    <li>
-                      Include more role-specific technical keywords.
-                    </li>
-                    <li>
-                      Keep experience descriptions concise and
-                      result-focused.
-                    </li>
-                  </ul>
-                </article>
+                    <ul>
+                      {normalizeArray(suggestions).map(
+                        (suggestion, index) => (
+                          <li key={index}>{suggestion}</li>
+                        )
+                      )}
+                    </ul>
+                  </article>
+                )}
               </div>
             </section>
           )}
