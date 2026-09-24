@@ -36,23 +36,8 @@ urlpatterns = [
 
     path("resume/analyze", views.resume_analyze),
 
-    path(
-        "coding",
-        lambda request: views.placeholder(request, "coding"),
-    ),
-
-    path(
-        "company",
-        lambda request: views.placeholder(request, "company"),
-    ),
-
-    path(
-        "roadmap",
-        lambda request: views.placeholder(request, "roadmap"),
-    ),
-
-    path(
-        "users",
-        lambda request: views.placeholder(request, "users"),
-    ),
+    path("coding", lambda request: views.placeholder(request, "coding")),
+    path("company", lambda request: views.placeholder(request, "company")),
+    path("roadmap", lambda request: views.placeholder(request, "roadmap")),
+    path("users", lambda request: views.placeholder(request, "users")),
 ]
