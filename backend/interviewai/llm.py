@@ -9,7 +9,8 @@ load_dotenv(
     os.path.join(
         os.path.dirname(os.path.dirname(__file__)),
         ".env",
-    )
+    ),
+    override=True,
 )
 
 api_key = os.getenv("OPENAI_API_KEY")
