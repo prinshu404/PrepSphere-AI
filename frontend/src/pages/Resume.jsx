@@ -1,10 +1,16 @@
 import React, { useRef, useState } from "react";
-import { Upload, FileText, X, Sparkles, CheckCircle2 } from "lucide-react";
+import {
+  Upload,
+  FileText,
+  X,
+  Sparkles,
+  CheckCircle2,
+} from "lucide-react";
 
 import DashboardSidebar from "../components/dashboard/DashboardSidebar";
 import DashboardNavbar from "../components/dashboard/DashboardNavbar";
 
-import resumeApi from "../api/resumeApi";
+import api from "../../api";
 
 import "../assets/css/resume.css";
 
@@ -26,7 +32,15 @@ const Resume = () => {
       "application/msword",
     ];
 
-    if (!allowedTypes.includes(file.type)) {
+    const fileName = file.name.toLowerCase();
+
+    const isValidType =
+      allowedTypes.includes(file.type) ||
+      fileName.endsWith(".pdf") ||
+      fileName.endsWith(".doc") ||
+      fileName.endsWith(".docx");
+
+    if (!isValidType) {
       setError("Please upload a PDF, DOC, or DOCX file.");
       return;
     }
@@ -43,15 +57,22 @@ const Resume = () => {
 
   const handleFileChange = (event) => {
     const file = event.target.files?.[0];
-    handleFile(file);
+
+    if (file) {
+      handleFile(file);
+    }
   };
 
   const handleDrop = (event) => {
     event.preventDefault();
+
     setIsDragging(false);
 
     const file = event.dataTransfer.files?.[0];
-    handleFile(file);
+
+    if (file) {
+      handleFile(file);
+    }
   };
 
   const removeFile = () => {
@@ -76,9 +97,14 @@ const Resume = () => {
 
     try {
       const formData = new FormData();
+
       formData.append("resume", selectedFile);
 
-      const response = await resumeApi.analyzeResume(formData);
+      const response = await api.post("/resume/analyze", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
       setAnalysisResult(response.data);
     } catch (err) {
@@ -95,48 +121,27 @@ const Resume = () => {
     }
   };
 
-  const getValue = (obj, keys, fallback = "Not available") => {
+  const getValue = (object, keys, fallback = null) => {
+    if (!object) {
+      return fallback;
+    }
+
     for (const key of keys) {
-      if (obj?.[key] !== undefined && obj?.[key] !== null) {
-        return obj[key];
+      if (
+        object[key] !== undefined &&
+        object[key] !== null
+      ) {
+        return object[key];
       }
     }
 
     return fallback;
   };
 
-  const atsScore = getValue(
-    analysisResult,
-    ["ats_score", "atsScore", "score"],
-    null
-  );
-
-  const skills = getValue(
-    analysisResult,
-    ["skills", "detected_skills", "detectedSkills"],
-    []
-  );
-
-  const missingKeywords = getValue(
-    analysisResult,
-    ["missing_keywords", "missingKeywords", "missing_skills"],
-    []
-  );
-
-  const suggestions = getValue(
-    analysisResult,
-    ["suggestions", "improvement_suggestions", "improvementSuggestions"],
-    []
-  );
-
-  const summary = getValue(
-    analysisResult,
-    ["summary", "overall_summary", "overallSummary"],
-    ""
-  );
-
   const normalizeArray = (value) => {
-    if (Array.isArray(value)) return value;
+    if (Array.isArray(value)) {
+      return value;
+    }
 
     if (typeof value === "string") {
       return value
@@ -147,6 +152,50 @@ const Resume = () => {
 
     return [];
   };
+
+  const atsScore = getValue(
+    analysisResult,
+    ["ats_score", "atsScore", "score"],
+    null
+  );
+
+  const skills = normalizeArray(
+    getValue(
+      analysisResult,
+      ["skills", "detected_skills", "detectedSkills"],
+      []
+    )
+  );
+
+  const missingKeywords = normalizeArray(
+    getValue(
+      analysisResult,
+      [
+        "missing_keywords",
+        "missingKeywords",
+        "missing_skills",
+      ],
+      []
+    )
+  );
+
+  const suggestions = normalizeArray(
+    getValue(
+      analysisResult,
+      [
+        "suggestions",
+        "improvement_suggestions",
+        "improvementSuggestions",
+      ],
+      []
+    )
+  );
+
+  const summary = getValue(
+    analysisResult,
+    ["summary", "overall_summary", "overallSummary"],
+    ""
+  );
 
   return (
     <div className="dashboard-page">
@@ -166,8 +215,8 @@ const Resume = () => {
               <h1>Resume Analyzer</h1>
 
               <p>
-                Upload your resume and get actionable insights to improve your
-                profile for your target role.
+                Upload your resume and get actionable insights to
+                improve your profile for your target role.
               </p>
             </div>
           </section>
@@ -179,8 +228,8 @@ const Resume = () => {
                   <h2>Upload your resume</h2>
 
                   <p>
-                    Supported formats: PDF, DOC, and DOCX. Maximum file size:
-                    5 MB.
+                    Supported formats: PDF, DOC, and DOCX.
+                    Maximum file size: 5 MB.
                   </p>
                 </div>
               </div>
@@ -188,23 +237,34 @@ const Resume = () => {
               {!selectedFile ? (
                 <div
                   className={`resume-dropzone ${
-                    isDragging ? "resume-dropzone--active" : ""
+                    isDragging
+                      ? "resume-dropzone--active"
+                      : ""
                   }`}
                   onDragOver={(event) => {
                     event.preventDefault();
                     setIsDragging(true);
                   }}
-                  onDragLeave={() => setIsDragging(false)}
+                  onDragLeave={() => {
+                    setIsDragging(false);
+                  }}
                   onDrop={handleDrop}
-                  onClick={() => fileInputRef.current?.click()}
+                  onClick={() =>
+                    fileInputRef.current?.click()
+                  }
                 >
                   <div className="resume-upload-icon">
                     <Upload size={25} />
                   </div>
 
-                  <h3>Drag and drop your resume here</h3>
+                  <h3>
+                    Drag and drop your resume here
+                  </h3>
 
-                  <p>or click to browse a file from your computer</p>
+                  <p>
+                    or click to browse a file from your
+                    computer
+                  </p>
 
                   <button
                     type="button"
@@ -236,7 +296,11 @@ const Resume = () => {
                       <h3>{selectedFile.name}</h3>
 
                       <p>
-                        {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB
+                        {(
+                          selectedFile.size /
+                          (1024 * 1024)
+                        ).toFixed(2)}{" "}
+                        MB
                       </p>
                     </div>
                   </div>
@@ -252,7 +316,11 @@ const Resume = () => {
                 </div>
               )}
 
-              {error && <p className="resume-error">{error}</p>}
+              {error && (
+                <p className="resume-error">
+                  {error}
+                </p>
+              )}
 
               {selectedFile && (
                 <button
@@ -286,27 +354,37 @@ const Resume = () => {
               <div className="resume-benefit-list">
                 <div>
                   <CheckCircle2 size={18} />
-                  <span>ATS compatibility insights</span>
+                  <span>
+                    ATS compatibility insights
+                  </span>
                 </div>
 
                 <div>
                   <CheckCircle2 size={18} />
-                  <span>Skills and keyword analysis</span>
+                  <span>
+                    Skills and keyword analysis
+                  </span>
                 </div>
 
                 <div>
                   <CheckCircle2 size={18} />
-                  <span>Resume strengths</span>
+                  <span>
+                    Resume strengths
+                  </span>
                 </div>
 
                 <div>
                   <CheckCircle2 size={18} />
-                  <span>Missing skills and keywords</span>
+                  <span>
+                    Missing skills and keywords
+                  </span>
                 </div>
 
                 <div>
                   <CheckCircle2 size={18} />
-                  <span>Actionable improvement suggestions</span>
+                  <span>
+                    Actionable improvement suggestions
+                  </span>
                 </div>
               </div>
             </div>
@@ -324,7 +402,8 @@ const Resume = () => {
                   <h2>Your Resume Insights</h2>
 
                   <p>
-                    Here are the insights generated from your uploaded resume.
+                    Here are the insights generated from your
+                    uploaded resume.
                   </p>
                 </div>
               </div>
@@ -332,6 +411,7 @@ const Resume = () => {
               {summary && (
                 <div className="resume-insight-card">
                   <h3>Resume Summary</h3>
+
                   <p>{summary}</p>
                 </div>
               )}
@@ -347,7 +427,9 @@ const Resume = () => {
                         : atsScore}
                     </strong>
 
-                    <p>Resume compatibility score</p>
+                    <p>
+                      Resume compatibility score
+                    </p>
                   </article>
                 )}
 
@@ -355,12 +437,16 @@ const Resume = () => {
                   <h3>Detected Skills</h3>
 
                   <div className="resume-tags">
-                    {normalizeArray(skills).length > 0 ? (
-                      normalizeArray(skills).map((skill, index) => (
-                        <span key={index}>{skill}</span>
+                    {skills.length > 0 ? (
+                      skills.map((skill, index) => (
+                        <span key={index}>
+                          {skill}
+                        </span>
                       ))
                     ) : (
-                      <span>No skills detected</span>
+                      <span>
+                        No skills detected
+                      </span>
                     )}
                   </div>
                 </article>
@@ -369,24 +455,34 @@ const Resume = () => {
                   <h3>Missing Keywords</h3>
 
                   <div className="resume-tags resume-tags--muted">
-                    {normalizeArray(missingKeywords).length > 0 ? (
-                      normalizeArray(missingKeywords).map((keyword, index) => (
-                        <span key={index}>{keyword}</span>
-                      ))
+                    {missingKeywords.length > 0 ? (
+                      missingKeywords.map(
+                        (keyword, index) => (
+                          <span key={index}>
+                            {keyword}
+                          </span>
+                        )
+                      )
                     ) : (
-                      <span>No missing keywords found</span>
+                      <span>
+                        No missing keywords found
+                      </span>
                     )}
                   </div>
                 </article>
 
-                {normalizeArray(suggestions).length > 0 && (
+                {suggestions.length > 0 && (
                   <article className="resume-insight-card resume-insight-card--wide">
-                    <h3>Improvement Suggestions</h3>
+                    <h3>
+                      Improvement Suggestions
+                    </h3>
 
                     <ul>
-                      {normalizeArray(suggestions).map(
+                      {suggestions.map(
                         (suggestion, index) => (
-                          <li key={index}>{suggestion}</li>
+                          <li key={index}>
+                            {suggestion}
+                          </li>
                         )
                       )}
                     </ul>
