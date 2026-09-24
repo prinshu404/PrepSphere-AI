@@ -1,13 +1,23 @@
 import re
 
-from .models import Interview, LoginHistory
+from django.db import transaction
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
+
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from pypdf import PdfReader
 from docx import Document
+
+from .models import (
+    Interview,
+    Question,
+    InterviewQuestion,
+    LoginHistory,
+)
+
+from .llm import generate_mcq_questions
 
 
 def get_demo_user(request):
@@ -50,7 +60,7 @@ def home(request):
         "stats": {
             "students": total_students,
             "interviews": Interview.objects.count(),
-            "questions": 0,
+            "questions": Question.objects.count(),
             "reports": 0,
         },
         "features": [
@@ -202,6 +212,54 @@ def interviews(request):
         }, status=401)
 
     if request.method == "GET":
+        interview_id = request.query_params.get("id")
+
+        if interview_id:
+            try:
+                interview = Interview.objects.get(
+                    id=int(interview_id),
+                    user=user,
+                )
+            except (Interview.DoesNotExist, ValueError):
+                return Response({
+                    "message": "Interview not found."
+                }, status=404)
+
+            interview_questions = (
+                InterviewQuestion.objects
+                .filter(interview=interview)
+                .select_related("question")
+                .order_by("question_number")
+            )
+
+            questions = []
+
+            for item in interview_questions:
+                question = item.question
+
+                questions.append({
+                    "id": item.id,
+                    "question_number": item.question_number,
+                    "question": question.question_text,
+                    "options": {
+                        "A": question.option_a,
+                        "B": question.option_b,
+                        "C": question.option_c,
+                        "D": question.option_d,
+                    },
+                })
+
+            return Response({
+                "id": interview.id,
+                "title": interview.title,
+                "interview_type": interview.interview_type,
+                "status": interview.status,
+                "score": interview.score,
+                "question_count": len(questions),
+                "questions": questions,
+                "created_at": interview.created_at,
+            })
+
         interviews = Interview.objects.filter(
             user=user
         ).order_by("-created_at")
@@ -209,12 +267,17 @@ def interviews(request):
         data = []
 
         for interview in interviews:
+            question_count = InterviewQuestion.objects.filter(
+                interview=interview
+            ).count()
+
             data.append({
                 "id": interview.id,
                 "title": interview.title,
                 "interview_type": interview.interview_type,
                 "status": interview.status,
                 "score": interview.score,
+                "question_count": question_count,
                 "created_at": interview.created_at,
             })
 
@@ -223,7 +286,15 @@ def interviews(request):
     title = request.data.get("title")
     interview_type = request.data.get(
         "interview_type",
-        "Technical"
+        "Technical",
+    )
+    subject = request.data.get(
+        "subject",
+        "General Technical",
+    )
+    difficulty = request.data.get(
+        "difficulty",
+        "Medium",
     )
 
     if not title:
@@ -231,19 +302,106 @@ def interviews(request):
             "message": "Interview title is required."
         }, status=400)
 
-    interview = Interview.objects.create(
-        user=user,
-        title=title,
-        interview_type=interview_type,
+    allowed_difficulties = {
+        "Easy",
+        "Medium",
+        "Hard",
+    }
+
+    if difficulty not in allowed_difficulties:
+        return Response({
+            "message": "Invalid difficulty level."
+        }, status=400)
+
+    previous_questions = list(
+        InterviewQuestion.objects
+        .filter(
+            interview__user=user,
+        )
+        .select_related("question")
+        .values_list(
+            "question__question_text",
+            flat=True,
+        )
+        .order_by("-interview__created_at")[:100]
     )
+
+    try:
+        generated_questions = generate_mcq_questions(
+            interview_type=interview_type,
+            subject=subject,
+            difficulty=difficulty,
+            count=50,
+            previous_questions=previous_questions,
+        )
+    except Exception:
+        return Response({
+            "message": (
+                "Unable to generate interview questions right now. "
+                "Please try again."
+            )
+        }, status=503)
+
+    if len(generated_questions) != 50:
+        return Response({
+            "message": (
+                "The AI did not generate the required 50 questions. "
+                "Please try again."
+            )
+        }, status=503)
+
+    try:
+        with transaction.atomic():
+            interview = Interview.objects.create(
+                user=user,
+                title=title,
+                interview_type=interview_type,
+                status="In Progress",
+                score=0,
+            )
+
+            for index, item in enumerate(
+                generated_questions,
+                start=1,
+            ):
+                question = Question.objects.create(
+                    question_text=item["question"],
+                    category=subject,
+                    difficulty=difficulty,
+                    option_a=item["option_a"],
+                    option_b=item["option_b"],
+                    option_c=item["option_c"],
+                    option_d=item["option_d"],
+                    correct_option=item["correct_option"],
+                    explanation=item["explanation"],
+                    is_active=True,
+                )
+
+                InterviewQuestion.objects.create(
+                    interview=interview,
+                    question=question,
+                    question_number=index,
+                )
+
+    except Exception:
+        return Response({
+            "message": (
+                "Unable to save the generated interview. "
+                "Please try again."
+            )
+        }, status=500)
 
     return Response({
         "id": interview.id,
         "title": interview.title,
         "interview_type": interview.interview_type,
+        "subject": subject,
+        "difficulty": difficulty,
         "status": interview.status,
         "score": interview.score,
+        "question_count": 50,
         "created_at": interview.created_at,
+        "message": "Interview generated successfully.",
     }, status=201)
 
 
@@ -374,10 +532,16 @@ def analyze_resume_text(text):
     detected_sections = []
 
     for section, keywords in section_keywords.items():
-        if any(keyword in normalized_text for keyword in keywords):
+        if any(
+            keyword in normalized_text
+            for keyword in keywords
+        ):
             detected_sections.append(section)
 
-    section_score = min(len(detected_sections) * 2, 10)
+    section_score = min(
+        len(detected_sections) * 2,
+        10,
+    )
 
     email_found = bool(
         re.search(
@@ -394,9 +558,13 @@ def analyze_resume_text(text):
         )
     )
 
-    contact_score = 5 if email_found and phone_found else 3 if (
-        email_found or phone_found
-    ) else 0
+    contact_score = (
+        5
+        if email_found and phone_found
+        else 3
+        if email_found or phone_found
+        else 0
+    )
 
     achievement_patterns = [
         r"\b\d+%",
@@ -415,13 +583,27 @@ def analyze_resume_text(text):
             )
         )
 
-    achievement_score = min(achievement_matches * 2, 10)
+    achievement_score = min(
+        achievement_matches * 2,
+        10,
+    )
 
-    keyword_score = min(len(skills) * 1.5, 20)
+    keyword_score = min(
+        len(skills) * 1.5,
+        20,
+    )
 
-    experience_score = 20 if "experience" in detected_sections else 0
+    experience_score = (
+        20
+        if "experience" in detected_sections
+        else 0
+    )
 
-    project_score = 15 if "projects" in detected_sections else 0
+    project_score = (
+        15
+        if "projects" in detected_sections
+        else 0
+    )
 
     formatting_score = 5
 
@@ -435,7 +617,10 @@ def analyze_resume_text(text):
         + formatting_score
     )
 
-    total_score = max(0, min(total_score, 100))
+    total_score = max(
+        0,
+        min(total_score, 100),
+    )
 
     common_keywords = [
         "rest api",
@@ -502,13 +687,21 @@ def analyze_resume_text(text):
         )
 
     if total_score >= 85:
-        summary = "Strong ATS compatibility with several relevant resume signals."
+        summary = (
+            "Strong ATS compatibility with several relevant resume signals."
+        )
     elif total_score >= 70:
-        summary = "Good ATS compatibility with some areas that can be improved."
+        summary = (
+            "Good ATS compatibility with some areas that can be improved."
+        )
     elif total_score >= 50:
-        summary = "Moderate ATS compatibility with several areas needing improvement."
+        summary = (
+            "Moderate ATS compatibility with several areas needing improvement."
+        )
     else:
-        summary = "The resume needs improvement in several ATS-related areas."
+        summary = (
+            "The resume needs improvement in several ATS-related areas."
+        )
 
     return {
         "ats_score": total_score,
@@ -529,7 +722,12 @@ def resume_analyze(request):
             "message": "Please upload a resume file."
         }, status=400)
 
-    allowed_extensions = (".pdf", ".doc", ".docx")
+    allowed_extensions = (
+        ".pdf",
+        ".doc",
+        ".docx",
+    )
+
     file_name = resume.name.lower()
 
     if not file_name.endswith(allowed_extensions):
@@ -545,8 +743,10 @@ def resume_analyze(request):
     try:
         if file_name.endswith(".pdf"):
             extracted_text = extract_pdf_text(resume)
+
         elif file_name.endswith(".docx"):
             extracted_text = extract_docx_text(resume)
+
         else:
             return Response({
                 "message": (
@@ -555,7 +755,9 @@ def resume_analyze(request):
                 )
             }, status=400)
 
-        extracted_text = clean_resume_text(extracted_text)
+        extracted_text = clean_resume_text(
+            extracted_text
+        )
 
         if not extracted_text:
             return Response({
@@ -565,7 +767,9 @@ def resume_analyze(request):
                 )
             }, status=400)
 
-        analysis = analyze_resume_text(extracted_text)
+        analysis = analyze_resume_text(
+            extracted_text
+        )
 
         return Response({
             "status": "analyzed",
