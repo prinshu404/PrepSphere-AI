@@ -1,4 +1,4 @@
-```jsx
+
 import React, { useRef, useState } from "react";
 import { Upload, FileText, X, Sparkles, CheckCircle2 } from "lucide-react";
 
