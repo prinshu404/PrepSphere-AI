@@ -1,0 +1,1 @@
+export default function CodingTest(){return <section><h1>CodingTest</h1><p>PrepSphere AI module — ready for implementation.</p></section>}

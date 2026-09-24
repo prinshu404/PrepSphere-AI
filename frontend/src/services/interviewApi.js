@@ -1,0 +1,1 @@
+import api from "./api"; export const getInterviews=()=>api.get("/interviews"); export const createInterview=(data)=>api.post("/interviews",data);

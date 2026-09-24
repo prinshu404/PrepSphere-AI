@@ -1,0 +1,1 @@
+export default function Resume(){return <section><h1>Resume</h1><p>PrepSphere AI module — ready for implementation.</p></section>}

@@ -1,0 +1,229 @@
+/* =========================================================
+   PREPSPHERE AI - PERFORMANCE OVERVIEW
+   File: client/src/assets/css/performance-overview.css
+   ========================================================= */
+
+.performance-overview {
+  width: 100%;
+  min-width: 0;
+}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.performance-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 15px;
+}
+
+.performance-header h2 {
+  margin: 0;
+
+  color: #292d40;
+
+  font-size: 15px;
+  font-weight: 750;
+
+  letter-spacing: -0.2px;
+}
+
+.performance-header p {
+  margin: 5px 0 0;
+
+  color: #999cac;
+
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.performance-period {
+  flex-shrink: 0;
+
+  display: inline-flex;
+  align-items: center;
+
+  gap: 6px;
+
+  padding: 6px 9px;
+
+  border: 1px solid #e8e5f0;
+  border-radius: 8px;
+
+  background: #faf9fd;
+
+  color: #777b8e;
+
+  font-size: 9px;
+  font-weight: 650;
+}
+
+.performance-period-dot {
+  width: 6px;
+  height: 6px;
+
+  border-radius: 50%;
+
+  background: #7654d7;
+}
+
+/* =========================================================
+   SUMMARY
+   ========================================================= */
+
+.performance-summary {
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  margin-top: 17px;
+}
+
+.performance-score {
+  display: flex;
+  align-items: baseline;
+
+  gap: 3px;
+}
+
+.performance-score strong {
+  color: #292d40;
+
+  font-size: 28px;
+  font-weight: 800;
+
+  letter-spacing: -1px;
+  line-height: 1;
+}
+
+.performance-score span {
+  color: #a0a2af;
+
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.performance-growth {
+  display: flex;
+  flex-direction: column;
+
+  gap: 2px;
+
+  padding-left: 12px;
+
+  border-left: 1px solid #e8e8ef;
+}
+
+.performance-growth span {
+  color: #3b9a68;
+
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.performance-growth small {
+  color: #a0a2af;
+
+  font-size: 8px;
+}
+
+/* =========================================================
+   CHART
+   ========================================================= */
+
+.performance-chart {
+  width: 100%;
+  height: 225px;
+
+  margin-top: 10px;
+}
+
+.performance-chart svg {
+  overflow: visible;
+}
+
+/* =========================================================
+   TOOLTIP
+   ========================================================= */
+
+.performance-tooltip {
+  min-width: 72px;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 4px;
+
+  padding: 8px 10px;
+
+  border: 1px solid #e8e5f0;
+  border-radius: 9px;
+
+  background: #ffffff;
+
+  box-shadow: 0 8px 22px rgba(35, 38, 55, 0.1);
+}
+
+.performance-tooltip span {
+  color: #999cac;
+
+  font-size: 9px;
+  font-weight: 600;
+}
+
+.performance-tooltip strong {
+  color: #7654d7;
+
+  font-size: 12px;
+  font-weight: 800;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 900px) {
+  .performance-chart {
+    height: 210px;
+  }
+}
+
+@media (max-width: 600px) {
+  .performance-header {
+    flex-direction: column;
+  }
+
+  .performance-period {
+    align-self: flex-start;
+  }
+
+  .performance-chart {
+    height: 195px;
+  }
+}
+
+@media (max-width: 420px) {
+  .performance-header h2 {
+    font-size: 14px;
+  }
+
+  .performance-header p {
+    font-size: 9px;
+  }
+
+  .performance-summary {
+    margin-top: 14px;
+  }
+
+  .performance-score strong {
+    font-size: 25px;
+  }
+
+  .performance-chart {
+    height: 175px;
+  }
+}

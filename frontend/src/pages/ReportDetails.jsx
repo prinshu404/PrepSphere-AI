@@ -1,0 +1,1 @@
+export default function ReportDetails(){return <section><h1>ReportDetails</h1><p>PrepSphere AI module — ready for implementation.</p></section>}

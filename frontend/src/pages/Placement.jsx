@@ -1,0 +1,1 @@
+export default function Placement(){return <section><h1>Placement</h1><p>PrepSphere AI module — ready for implementation.</p></section>}

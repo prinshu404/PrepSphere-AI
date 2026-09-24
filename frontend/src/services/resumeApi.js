@@ -1,0 +1,1 @@
+import api from "./api"; export const analyzeResume=(data)=>api.post("/resume/analyze",data);

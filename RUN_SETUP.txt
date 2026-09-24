@@ -1,0 +1,20 @@
+PrepSphere AI — Single Setup
+
+BACKEND (CMD 1)
+cd /d "C:\PrepSphere AI\backend"
+python -m venv venv                 (first time only)
+venv\Scripts\activate
+pip install -r requirements.txt      (first setup / dependency changes)
+python manage.py runserver
+
+FRONTEND (CMD 2)
+cd /d "C:\PrepSphere AI\frontend"
+npm install                           (first setup / dependency changes)
+npm run dev
+
+Frontend: http://localhost:5173/
+Django API: http://127.0.0.1:8000/api/
+
+There is one backend environment and one frontend dependency installation.
+No separate client/server environment is included.
+Machine-specific venv and node_modules are intentionally excluded from this ZIP.

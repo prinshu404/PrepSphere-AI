@@ -1,0 +1,1 @@
+export default function InterviewCard({title="Mock Interview"}){return <div className="bg-white p-5 rounded-xl shadow-sm"><h3>{title}</h3><p>AI-powered interview practice.</p></div>}
