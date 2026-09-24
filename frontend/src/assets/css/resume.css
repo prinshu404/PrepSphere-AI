@@ -1,0 +1,509 @@
+.resume-page {
+  min-height: calc(100vh - 72px);
+  padding: 32px;
+  background: #f7f8fc;
+}
+
+/* Header */
+
+.resume-header {
+  margin-bottom: 28px;
+}
+
+.resume-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 10px;
+  color: #635bff;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.resume-header h1 {
+  margin: 0;
+  color: #171827;
+  font-size: 32px;
+  line-height: 1.2;
+  font-weight: 750;
+}
+
+.resume-header p {
+  max-width: 680px;
+  margin: 10px 0 0;
+  color: #707487;
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+/* Main Content */
+
+.resume-content {
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) minmax(280px, 0.9fr);
+  gap: 22px;
+  align-items: stretch;
+}
+
+.resume-upload-card,
+.resume-side-card,
+.resume-results {
+  border: 1px solid #e8eaf1;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 8px 28px rgba(30, 35, 70, 0.05);
+}
+
+.resume-upload-card {
+  padding: 26px;
+}
+
+.resume-card-heading {
+  margin-bottom: 22px;
+}
+
+.resume-card-heading h2,
+.resume-side-card h2,
+.resume-results h2 {
+  margin: 0;
+  color: #202133;
+  font-size: 19px;
+  font-weight: 700;
+}
+
+.resume-card-heading p {
+  margin: 7px 0 0;
+  color: #7a7f91;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* Upload Area */
+
+.resume-dropzone {
+  min-height: 270px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+  border: 1.5px dashed #cfd3e2;
+  border-radius: 15px;
+  background: #fafbff;
+  text-align: center;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.resume-dropzone:hover,
+.resume-dropzone--active {
+  border-color: #635bff;
+  background: #f7f6ff;
+}
+
+.resume-dropzone--active {
+  transform: scale(1.005);
+}
+
+.resume-upload-icon {
+  width: 58px;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  border-radius: 15px;
+  background: #eeedff;
+  color: #635bff;
+}
+
+.resume-dropzone h3 {
+  margin: 0;
+  color: #252638;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.resume-dropzone p {
+  margin: 7px 0 17px;
+  color: #85899a;
+  font-size: 13px;
+}
+
+.resume-browse-button {
+  padding: 10px 19px;
+  border: 1px solid #dcddea;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #4f46d9;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.resume-browse-button:hover {
+  border-color: #635bff;
+  background: #f7f6ff;
+  transform: translateY(-1px);
+}
+
+/* Selected File */
+
+.resume-selected-file {
+  min-height: 92px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px;
+  border: 1px solid #e3e5ee;
+  border-radius: 14px;
+  background: #fafbff;
+}
+
+.resume-file-left {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.resume-file-icon {
+  flex: 0 0 auto;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: #eeedff;
+  color: #635bff;
+}
+
+.resume-file-info {
+  min-width: 0;
+}
+
+.resume-file-info h3 {
+  margin: 0 0 5px;
+  overflow: hidden;
+  color: #292b3b;
+  font-size: 14px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.resume-file-info p {
+  margin: 0;
+  color: #85899a;
+  font-size: 12px;
+}
+
+.resume-remove-button {
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e0e2ea;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #74798b;
+  cursor: pointer;
+  transition:
+    color 0.2s ease,
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.resume-remove-button:hover {
+  border-color: #f0cfd3;
+  background: #fff6f7;
+  color: #d34d5c;
+}
+
+/* Analyze Button */
+
+.resume-analyze-button {
+  width: 100%;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  margin-top: 18px;
+  padding: 12px 20px;
+  border: 0;
+  border-radius: 10px;
+  background: #635bff;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 8px 18px rgba(99, 91, 255, 0.2);
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.resume-analyze-button:hover:not(:disabled) {
+  background: #554ce8;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(99, 91, 255, 0.25);
+}
+
+.resume-analyze-button:disabled {
+  opacity: 0.75;
+  cursor: not-allowed;
+}
+
+.resume-spinner {
+  width: 17px;
+  height: 17px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: resume-spin 0.8s linear infinite;
+}
+
+@keyframes resume-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Side Card */
+
+.resume-side-card {
+  padding: 26px;
+}
+
+.resume-side-icon {
+  width: 46px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 18px;
+  border-radius: 12px;
+  background: #eeedff;
+  color: #635bff;
+}
+
+.resume-side-card h2 {
+  margin-bottom: 20px;
+}
+
+.resume-benefit-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.resume-benefit-list > div {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: #626779;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.resume-benefit-list svg {
+  flex: 0 0 auto;
+  margin-top: 1px;
+  color: #635bff;
+}
+
+/* Results */
+
+.resume-results {
+  margin-top: 22px;
+  padding: 26px;
+}
+
+.resume-results-header {
+  margin-bottom: 22px;
+}
+
+.resume-results-header p {
+  margin: 7px 0 0;
+  color: #7a7f91;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.resume-result-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.resume-score-card,
+.resume-insight-card {
+  min-height: 150px;
+  padding: 20px;
+  border: 1px solid #e7e9f0;
+  border-radius: 14px;
+  background: #fafbff;
+}
+
+.resume-score-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.resume-score-card > span {
+  color: #74798b;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.resume-score-card strong {
+  margin-top: 5px;
+  color: #635bff;
+  font-size: 34px;
+  line-height: 1.1;
+  font-weight: 800;
+}
+
+.resume-score-card p {
+  margin: 6px 0 0;
+  color: #73788a;
+  font-size: 12px;
+}
+
+.resume-insight-card h3 {
+  margin: 0 0 15px;
+  color: #292b3b;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.resume-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.resume-tags span {
+  padding: 7px 10px;
+  border: 1px solid #deddfb;
+  border-radius: 8px;
+  background: #f2f1ff;
+  color: #534bd0;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.resume-tags--muted span {
+  border-color: #e3e5eb;
+  background: #f4f5f8;
+  color: #696e7e;
+}
+
+.resume-insight-card--wide {
+  grid-column: 1 / -1;
+}
+
+.resume-insight-card--wide ul {
+  margin: 0;
+  padding-left: 19px;
+  color: #666b7c;
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.resume-insight-card--wide li {
+  padding-left: 3px;
+}
+
+/* Responsive */
+
+@media (max-width: 1000px) {
+  .resume-content {
+    grid-template-columns: 1fr;
+  }
+
+  .resume-result-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .resume-page {
+    padding: 22px 16px;
+  }
+
+  .resume-header h1 {
+    font-size: 27px;
+  }
+
+  .resume-upload-card,
+  .resume-side-card,
+  .resume-results {
+    padding: 20px;
+    border-radius: 15px;
+  }
+
+  .resume-dropzone {
+    min-height: 230px;
+    padding: 22px 16px;
+  }
+
+  .resume-result-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .resume-insight-card--wide {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .resume-page {
+    padding: 18px 12px;
+  }
+
+  .resume-header h1 {
+    font-size: 24px;
+  }
+
+  .resume-header p {
+    font-size: 13px;
+  }
+
+  .resume-dropzone h3 {
+    font-size: 14px;
+  }
+
+  .resume-selected-file {
+    padding: 14px;
+  }
+
+  .resume-file-left {
+    gap: 10px;
+  }
+
+  .resume-file-icon {
+    width: 42px;
+    height: 42px;
+  }
+
+  .resume-file-info h3 {
+    max-width: 170px;
+  }
+}
