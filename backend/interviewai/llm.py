@@ -2,7 +2,7 @@ import json
 import os
 
 from dotenv import load_dotenv
-from openai import OpenAI
+from google import genai
 
 
 load_dotenv(
@@ -13,12 +13,12 @@ load_dotenv(
     override=True,
 )
 
-api_key = os.getenv("OPENAI_API_KEY")
+api_key = os.getenv("GEMINI_API_KEY")
 
 if not api_key:
-    raise RuntimeError("OPENAI_API_KEY is not configured.")
+    raise RuntimeError("GEMINI_API_KEY is not configured.")
 
-client = OpenAI(api_key=api_key)
+client = genai.Client(api_key=api_key)
 
 
 def generate_mcq_questions(
@@ -77,12 +77,17 @@ Return this exact JSON structure:
 }}
 """
 
-    response = client.responses.create(
-        model="gpt-5-mini",
-        input=prompt,
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=prompt,
     )
 
-    output_text = response.output_text.strip()
+    output_text = response.text.strip()
+
+    if output_text.startswith("```"):
+        output_text = output_text.replace("```json", "", 1)
+        output_text = output_text.replace("```", "", 1)
+        output_text = output_text.strip()
 
     try:
         data = json.loads(output_text)
