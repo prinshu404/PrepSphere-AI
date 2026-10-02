@@ -31,7 +31,12 @@ urlpatterns = [
     path("auth/login", views.login),
 
     path("dashboard", views.dashboard),
+
     path("interviews", views.interviews),
+    path(
+        "interviews/<int:interview_id>/submit",
+        views.submit_interview,
+    ),
 
     path("resume/analyze", views.resume_analyze),
 
