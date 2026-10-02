@@ -1,3 +1,4 @@
+```jsx
 import { Navigate, Route, Routes } from "react-router-dom";
 
 import Home from "./pages/Home";
@@ -5,6 +6,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Interviews from "./pages/Interviews";
+import InterviewTest from "./pages/InterviewTest";
 import Resume from "./pages/Resume";
 
 import DashboardSidebar from "./components/dashboard/DashboardSidebar";
@@ -47,14 +49,22 @@ function App() {
     <Routes>
       {/* Public pages */}
       <Route path="/" element={<Home />} />
+
       <Route path="/login" element={<Login />} />
+
       <Route path="/register" element={<Register />} />
 
       {/* Dashboard */}
-      <Route path="/dashboard" element={<Dashboard />} />
+      <Route
+        path="/dashboard"
+        element={<Dashboard />}
+      />
 
       {/* Resume Analyzer */}
-      <Route path="/resume" element={<Resume />} />
+      <Route
+        path="/resume"
+        element={<Resume />}
+      />
 
       {/* Mock Interviews */}
       <Route
@@ -62,6 +72,16 @@ function App() {
         element={
           <DashboardLayout>
             <Interviews />
+          </DashboardLayout>
+        }
+      />
+
+      {/* Individual Interview Test */}
+      <Route
+        path="/interviews/:id"
+        element={
+          <DashboardLayout>
+            <InterviewTest />
           </DashboardLayout>
         }
       />
@@ -155,9 +175,13 @@ function App() {
       />
 
       {/* Unknown routes */}
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route
+        path="*"
+        element={<Navigate to="/" replace />}
+      />
     </Routes>
   );
 }
 
 export default App;
+```
