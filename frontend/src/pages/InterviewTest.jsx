@@ -1,9 +1,13 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, LoaderCircle, Send } from "lucide-react";
+import {
+  ArrowLeft,
+  LoaderCircle,
+  Send,
+} from "lucide-react";
 
 import api from "../../api";
+import "../assets/css/InterviewTest.css";
 
 function InterviewTest() {
   const { id } = useParams();
@@ -30,6 +34,8 @@ function InterviewTest() {
         setInterview(response.data.interview);
         setQuestions(response.data.questions || []);
       } catch (err) {
+        console.error(err);
+
         setError(
           err.response?.data?.message ||
             "Unable to load the interview."
@@ -49,14 +55,21 @@ function InterviewTest() {
     }));
   };
 
-  const startIndex = (currentPage - 1) * QUESTIONS_PER_PAGE;
-  const endIndex = startIndex + QUESTIONS_PER_PAGE;
+  const startIndex =
+    (currentPage - 1) * QUESTIONS_PER_PAGE;
 
-  const currentQuestions = questions.slice(startIndex, endIndex);
+  const endIndex =
+    startIndex + QUESTIONS_PER_PAGE;
+
+  const currentQuestions = questions.slice(
+    startIndex,
+    endIndex
+  );
 
   const goToNextPage = () => {
     if (currentPage < TOTAL_PAGES) {
       setCurrentPage((page) => page + 1);
+
       window.scrollTo({
         top: 0,
         behavior: "smooth",
@@ -67,6 +80,7 @@ function InterviewTest() {
   const goToPreviousPage = () => {
     if (currentPage > 1) {
       setCurrentPage((page) => page - 1);
+
       window.scrollTo({
         top: 0,
         behavior: "smooth",
@@ -87,51 +101,33 @@ function InterviewTest() {
 
     if (!confirmed) return;
 
-    alert("Interview submission will be connected in the next step.");
+    alert(
+      "Interview submission will be connected in the next step."
+    );
   };
 
   if (loading) {
     return (
-      <div
-        style={{
-          minHeight: "70vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          flexDirection: "column",
-          gap: "12px",
-        }}
-      >
-        <LoaderCircle
-          size={34}
-          style={{
-            animation: "spin 1s linear infinite",
-          }}
-        />
-
-        <p>Loading interview questions...</p>
+      <div className="interview-loading">
+        <LoaderCircle size={22} />
+        <span>Loading interview questions...</span>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div
-        style={{
-          maxWidth: "900px",
-          margin: "40px auto",
-          padding: "20px",
-        }}
-      >
-        <div className="auth-error">{error}</div>
+      <div className="interview-error">
+        <h2>Unable to load the interview</h2>
+
+        <p>{error}</p>
 
         <button
           type="button"
+          className="interview-back-button"
           onClick={() => navigate("/interviews")}
-          style={{
-            marginTop: "16px",
-          }}
         >
+          <ArrowLeft size={17} />
           Back to Interviews
         </button>
       </div>
@@ -139,201 +135,152 @@ function InterviewTest() {
   }
 
   return (
-    <div
-      style={{
-        width: "min(900px, 92%)",
-        margin: "30px auto",
-        paddingBottom: "40px",
-      }}
-    >
+    <div className="interview-test-page">
+      {/* Back Button */}
       <button
         type="button"
+        className="interview-back-button"
         onClick={() => navigate("/interviews")}
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: "7px",
-          marginBottom: "20px",
-        }}
       >
         <ArrowLeft size={17} />
         Back to Interviews
       </button>
 
-      <div
-        className="auth-card"
-        style={{
-          width: "100%",
-          maxWidth: "none",
-          boxSizing: "border-box",
-        }}
-      >
-        <h1>{interview?.title || "Mock Interview"}</h1>
+      {/* Interview Header */}
+      <div className="interview-header-card">
+        <h1>
+          {interview?.title || "Mock Interview"}
+        </h1>
 
         <p>
-          {interview?.interview_type || "Technical"} ·{" "}
-          {interview?.subject || "General"} ·{" "}
+          {interview?.interview_type || "Technical"}
+          {" · "}
+          {interview?.subject || "General"}
+          {" · "}
           {interview?.difficulty || "Medium"}
         </p>
 
-        <div
-          style={{
-            marginTop: "18px",
-            padding: "12px 14px",
-            borderRadius: "10px",
-            background: "#f6f7ff",
-            display: "flex",
-            justifyContent: "space-between",
-            gap: "12px",
-            flexWrap: "wrap",
-          }}
-        >
+        <div className="interview-progress">
           <strong>
             Page {currentPage} of {TOTAL_PAGES}
           </strong>
 
           <span>
-            Questions {startIndex + 1}–{Math.min(endIndex, questions.length)}
+            Questions {startIndex + 1}–
+            {Math.min(endIndex, questions.length)} of{" "}
+            {questions.length}
           </span>
         </div>
       </div>
 
-      <div
-        style={{
-          display: "grid",
-          gap: "18px",
-          marginTop: "20px",
-        }}
-      >
-        {currentQuestions.map((item, index) => {
-          const questionNumber = startIndex + index + 1;
-          const selectedAnswer = answers[questionNumber];
+      {/* Questions */}
+      <div className="interview-questions">
+        {currentQuestions.map((item) => {
+          const questionNumber =
+            item.question_number;
+
+          const selectedAnswer =
+            answers[questionNumber] || "";
+
+          const options = [
+            {
+              key: "A",
+              text: item.option_a,
+            },
+            {
+              key: "B",
+              text: item.option_b,
+            },
+            {
+              key: "C",
+              text: item.option_c,
+            },
+            {
+              key: "D",
+              text: item.option_d,
+            },
+          ];
 
           return (
             <div
+              className="interview-question-card"
               key={item.id || questionNumber}
-              className="auth-card"
-              style={{
-                width: "100%",
-                maxWidth: "none",
-                boxSizing: "border-box",
-                margin: 0,
-              }}
             >
-              <h3>
+              <h3 className="interview-question-number">
                 Question {questionNumber}
               </h3>
 
-              <p
-                style={{
-                  fontSize: "16px",
-                  lineHeight: 1.6,
-                  fontWeight: 600,
-                }}
-              >
+              <p className="interview-question-text">
                 {item.question}
               </p>
 
-              <div
-                style={{
-                  display: "grid",
-                  gap: "10px",
-                  marginTop: "16px",
-                }}
-              >
-                {["A", "B", "C", "D"].map((option) => {
-                  const optionText =
-                    item[`option_${option.toLowerCase()}`];
+              <div className="interview-options">
+                {options.map((option) => (
+                  <label
+                    key={option.key}
+                    className={`interview-option ${
+                      selectedAnswer === option.key
+                        ? "selected"
+                        : ""
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name={`question-${questionNumber}`}
+                      value={option.key}
+                      checked={
+                        selectedAnswer ===
+                        option.key
+                      }
+                      onChange={() =>
+                        handleAnswer(
+                          questionNumber,
+                          option.key
+                        )
+                      }
+                    />
 
-                  const isSelected =
-                    selectedAnswer === option;
+                    <span className="interview-option-content">
+                      <strong className="interview-option-letter">
+                        {option.key}.
+                      </strong>
 
-                  return (
-                    <label
-                      key={option}
-                      style={{
-                        display: "flex",
-                        alignItems: "flex-start",
-                        gap: "10px",
-                        padding: "12px",
-                        border: isSelected
-                          ? "2px solid #635bff"
-                          : "1px solid #ddd",
-                        borderRadius: "10px",
-                        cursor: "pointer",
-                        background: isSelected
-                          ? "#f6f7ff"
-                          : "#fff",
-                      }}
-                    >
-                      <input
-                        type="radio"
-                        name={`question-${questionNumber}`}
-                        value={option}
-                        checked={isSelected}
-                        onChange={() =>
-                          handleAnswer(
-                            questionNumber,
-                            option
-                          )
-                        }
-                        style={{
-                          marginTop: "4px",
-                        }}
-                      />
-
-                      <span>
-                        <strong>{option}.</strong>{" "}
-                        {optionText}
+                      <span className="interview-option-text">
+                        {option.text}
                       </span>
-                    </label>
-                  );
-                })}
+                    </span>
+                  </label>
+                ))}
               </div>
             </div>
           );
         })}
       </div>
 
-      <div
-        className="auth-card"
-        style={{
-          width: "100%",
-          maxWidth: "none",
-          boxSizing: "border-box",
-          marginTop: "20px",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          gap: "12px",
-          flexWrap: "wrap",
-        }}
-      >
+      {/* Navigation */}
+      <div className="interview-navigation">
         <button
           type="button"
+          className="interview-nav-button interview-prev-button"
           onClick={goToPreviousPage}
           disabled={currentPage === 1}
         >
-          Previous
+          ← Previous
         </button>
 
         {currentPage < TOTAL_PAGES ? (
           <button
             type="button"
+            className="interview-nav-button interview-next-button"
             onClick={goToNextPage}
           >
-            Next
+            Next →
           </button>
         ) : (
           <button
             type="button"
+            className="interview-submit-button"
             onClick={handleSubmit}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "8px",
-            }}
           >
             <Send size={17} />
             Submit Interview
@@ -345,4 +292,3 @@ function InterviewTest() {
 }
 
 export default InterviewTest;
-
