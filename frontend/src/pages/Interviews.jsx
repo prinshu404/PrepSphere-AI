@@ -1,18 +1,23 @@
+```jsx
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
   CalendarDays,
   LoaderCircle,
   Plus,
   Sparkles,
+  Play,
 } from "lucide-react";
+
 import {
   createInterview,
   getInterviews,
 } from "../services/interviewApi";
 
 function Interviews() {
+  const navigate = useNavigate();
+
   const [interviews, setInterviews] = useState([]);
   const [title, setTitle] = useState("");
   const [interviewType, setInterviewType] = useState("Technical");
@@ -124,6 +129,10 @@ function Interviews() {
     } finally {
       setCreating(false);
     }
+  };
+
+  const handleStartInterview = (interviewId) => {
+    navigate(`/interviews/${interviewId}`);
   };
 
   const currentSubjects = subjectOptions[interviewType] || [];
@@ -300,7 +309,12 @@ function Interviews() {
           <h2>My Interviews</h2>
 
           {loading ? (
-            <div style={{ textAlign: "center", padding: "30px" }}>
+            <div
+              style={{
+                textAlign: "center",
+                padding: "30px",
+              }}
+            >
               <LoaderCircle size={28} />
               <p>Loading interviews...</p>
             </div>
@@ -370,6 +384,24 @@ function Interviews() {
                       Score: {interview.score}%
                     </strong>
                   </div>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleStartInterview(interview.id)
+                    }
+                    style={{
+                      marginTop: "16px",
+                      width: "100%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "8px",
+                    }}
+                  >
+                    <Play size={17} />
+                    Start Interview
+                  </button>
                 </div>
               ))}
             </div>
@@ -381,4 +413,3 @@ function Interviews() {
 }
 
 export default Interviews;
-
