@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, LoaderCircle, Send } from "lucide-react";
@@ -29,8 +30,6 @@ function InterviewTest() {
         setInterview(response.data.interview);
         setQuestions(response.data.questions || []);
       } catch (err) {
-        console.error(err);
-
         setError(
           err.response?.data?.message ||
             "Unable to load the interview."
@@ -50,21 +49,14 @@ function InterviewTest() {
     }));
   };
 
-  const startIndex =
-    (currentPage - 1) * QUESTIONS_PER_PAGE;
+  const startIndex = (currentPage - 1) * QUESTIONS_PER_PAGE;
+  const endIndex = startIndex + QUESTIONS_PER_PAGE;
 
-  const endIndex =
-    startIndex + QUESTIONS_PER_PAGE;
-
-  const currentQuestions = questions.slice(
-    startIndex,
-    endIndex
-  );
+  const currentQuestions = questions.slice(startIndex, endIndex);
 
   const goToNextPage = () => {
     if (currentPage < TOTAL_PAGES) {
       setCurrentPage((page) => page + 1);
-
       window.scrollTo({
         top: 0,
         behavior: "smooth",
@@ -75,7 +67,6 @@ function InterviewTest() {
   const goToPreviousPage = () => {
     if (currentPage > 1) {
       setCurrentPage((page) => page - 1);
-
       window.scrollTo({
         top: 0,
         behavior: "smooth",
@@ -96,88 +87,105 @@ function InterviewTest() {
 
     if (!confirmed) return;
 
-    alert(
-      "Interview submission will be connected in the next step."
-    );
+    alert("Interview submission will be connected in the next step.");
   };
 
   if (loading) {
     return (
-      <div className="dashboard-section">
-        <div className="dashboard-card">
-          <LoaderCircle size={22} />
-          <p>Loading interview questions...</p>
-        </div>
+      <div
+        style={{
+          minHeight: "70vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexDirection: "column",
+          gap: "12px",
+        }}
+      >
+        <LoaderCircle
+          size={34}
+          style={{
+            animation: "spin 1s linear infinite",
+          }}
+        />
+
+        <p>Loading interview questions...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="dashboard-section">
-        <div className="dashboard-card">
-          <h2>Unable to load the interview</h2>
+      <div
+        style={{
+          maxWidth: "900px",
+          margin: "40px auto",
+          padding: "20px",
+        }}
+      >
+        <div className="auth-error">{error}</div>
 
-          <p>{error}</p>
-
-          <button
-            type="button"
-            onClick={() => navigate("/interviews")}
-          >
-            Back to Interviews
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() => navigate("/interviews")}
+          style={{
+            marginTop: "16px",
+          }}
+        >
+          Back to Interviews
+        </button>
       </div>
     );
   }
 
   return (
-    <div className="dashboard-section">
-      {/* Back Button */}
-      <div style={{ marginBottom: "20px" }}>
-        <button
-          type="button"
-          onClick={() => navigate("/interviews")}
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "8px",
-            padding: "10px 16px",
-            border: "none",
-            borderRadius: "8px",
-            cursor: "pointer",
-            background: "#f1f5f9",
-            color: "#1e293b",
-            fontWeight: "600",
-          }}
-        >
-          <ArrowLeft size={17} />
-          Back to Interviews
-        </button>
-      </div>
+    <div
+      style={{
+        width: "min(900px, 92%)",
+        margin: "30px auto",
+        paddingBottom: "40px",
+      }}
+    >
+      <button
+        type="button"
+        onClick={() => navigate("/interviews")}
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: "7px",
+          marginBottom: "20px",
+        }}
+      >
+        <ArrowLeft size={17} />
+        Back to Interviews
+      </button>
 
-      {/* Interview Header */}
-      <div className="dashboard-card">
-        <h1>
-          {interview?.title || "Mock Interview"}
-        </h1>
+      <div
+        className="auth-card"
+        style={{
+          width: "100%",
+          maxWidth: "none",
+          boxSizing: "border-box",
+        }}
+      >
+        <h1>{interview?.title || "Mock Interview"}</h1>
 
         <p>
-          {interview?.interview_type || "Technical"}{" "}
-          ·{" "}
-          {interview?.subject || "General"}{" "}
-          ·{" "}
+          {interview?.interview_type || "Technical"} ·{" "}
+          {interview?.subject || "General"} ·{" "}
           {interview?.difficulty || "Medium"}
         </p>
 
         <div
           style={{
             marginTop: "18px",
+            padding: "12px 14px",
+            borderRadius: "10px",
+            background: "#f6f7ff",
             display: "flex",
             justifyContent: "space-between",
-            alignItems: "center",
+            gap: "12px",
             flexWrap: "wrap",
-            gap: "10px",
           }}
         >
           <strong>
@@ -185,13 +193,11 @@ function InterviewTest() {
           </strong>
 
           <span>
-            Questions {startIndex + 1}–{Math.min(endIndex, questions.length)}{" "}
-            of {questions.length}
+            Questions {startIndex + 1}–{Math.min(endIndex, questions.length)}
           </span>
         </div>
       </div>
 
-      {/* Questions */}
       <div
         style={{
           display: "grid",
@@ -199,50 +205,30 @@ function InterviewTest() {
           marginTop: "20px",
         }}
       >
-        {currentQuestions.map((item) => {
-          const questionNumber = item.question_number;
-
-          const selectedAnswer =
-            answers[questionNumber] || "";
-
-          const options = [
-            {
-              key: "A",
-              text: item.option_a,
-            },
-            {
-              key: "B",
-              text: item.option_b,
-            },
-            {
-              key: "C",
-              text: item.option_c,
-            },
-            {
-              key: "D",
-              text: item.option_d,
-            },
-          ];
+        {currentQuestions.map((item, index) => {
+          const questionNumber = startIndex + index + 1;
+          const selectedAnswer = answers[questionNumber];
 
           return (
             <div
-              className="dashboard-card"
               key={item.id || questionNumber}
+              className="auth-card"
+              style={{
+                width: "100%",
+                maxWidth: "none",
+                boxSizing: "border-box",
+                margin: 0,
+              }}
             >
-              <h3
-                style={{
-                  marginBottom: "12px",
-                }}
-              >
+              <h3>
                 Question {questionNumber}
               </h3>
 
               <p
                 style={{
-                  fontSize: "17px",
-                  lineHeight: "1.7",
-                  fontWeight: "600",
-                  marginBottom: "20px",
+                  fontSize: "16px",
+                  lineHeight: 1.6,
+                  fontWeight: 600,
                 }}
               >
                 {item.question}
@@ -251,129 +237,92 @@ function InterviewTest() {
               <div
                 style={{
                   display: "grid",
-                  gap: "12px",
+                  gap: "10px",
+                  marginTop: "16px",
                 }}
               >
-                {options.map((option) => (
-                  <label
-                    key={option.key}
-                    style={{
-                      display: "flex",
-                      alignItems: "flex-start",
-                      gap: "12px",
-                      padding: "14px 16px",
-                      border: "1px solid #e2e8f0",
-                      borderRadius: "10px",
-                      cursor: "pointer",
-                      background:
-                        selectedAnswer === option.key
-                          ? "#eff6ff"
-                          : "#ffffff",
-                      borderColor:
-                        selectedAnswer === option.key
-                          ? "#3b82f6"
-                          : "#e2e8f0",
-                      transition: "all 0.2s ease",
-                    }}
-                  >
-                    <input
-                      type="radio"
-                      name={`question-${questionNumber}`}
-                      value={option.key}
-                      checked={
-                        selectedAnswer === option.key
-                      }
-                      onChange={() =>
-                        handleAnswer(
-                          questionNumber,
-                          option.key
-                        )
-                      }
-                      style={{
-                        width: "16px",
-                        height: "16px",
-                        minWidth: "16px",
-                        marginTop: "3px",
-                        cursor: "pointer",
-                        accentColor: "#2563eb",
-                      }}
-                    />
+                {["A", "B", "C", "D"].map((option) => {
+                  const optionText =
+                    item[`option_${option.toLowerCase()}`];
 
-                    <span
+                  const isSelected =
+                    selectedAnswer === option;
+
+                  return (
+                    <label
+                      key={option}
                       style={{
                         display: "flex",
-                        gap: "8px",
-                        lineHeight: "1.5",
-                        fontSize: "15px",
+                        alignItems: "flex-start",
+                        gap: "10px",
+                        padding: "12px",
+                        border: isSelected
+                          ? "2px solid #635bff"
+                          : "1px solid #ddd",
+                        borderRadius: "10px",
+                        cursor: "pointer",
+                        background: isSelected
+                          ? "#f6f7ff"
+                          : "#fff",
                       }}
                     >
-                      <strong>
-                        {option.key}.
-                      </strong>
+                      <input
+                        type="radio"
+                        name={`question-${questionNumber}`}
+                        value={option}
+                        checked={isSelected}
+                        onChange={() =>
+                          handleAnswer(
+                            questionNumber,
+                            option
+                          )
+                        }
+                        style={{
+                          marginTop: "4px",
+                        }}
+                      />
 
                       <span>
-                        {option.text}
+                        <strong>{option}.</strong>{" "}
+                        {optionText}
                       </span>
-                    </span>
-                  </label>
-                ))}
+                    </label>
+                  );
+                })}
               </div>
             </div>
           );
         })}
       </div>
 
-      {/* Navigation */}
       <div
+        className="auth-card"
         style={{
+          width: "100%",
+          maxWidth: "none",
+          boxSizing: "border-box",
+          marginTop: "20px",
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
           gap: "12px",
-          marginTop: "24px",
-          marginBottom: "30px",
+          flexWrap: "wrap",
         }}
       >
         <button
           type="button"
           onClick={goToPreviousPage}
           disabled={currentPage === 1}
-          style={{
-            padding: "12px 22px",
-            border: "none",
-            borderRadius: "8px",
-            cursor:
-              currentPage === 1
-                ? "not-allowed"
-                : "pointer",
-            background:
-              currentPage === 1
-                ? "#e2e8f0"
-                : "#f1f5f9",
-            color: "#1e293b",
-            fontWeight: "600",
-            opacity:
-              currentPage === 1 ? 0.6 : 1,
-          }}
         >
-          ← Previous
+          Previous
         </button>
 
         {currentPage < TOTAL_PAGES ? (
           <button
             type="button"
             onClick={goToNextPage}
-            style={{
-              padding: "12px 24px",
-              border: "none",
-              borderRadius: "8px",
-              cursor: "pointer",
-              background: "#2563eb",
-              color: "#ffffff",
-              fontWeight: "600",
-            }}
           >
-            Next →
+            Next
           </button>
         ) : (
           <button
@@ -382,14 +331,8 @@ function InterviewTest() {
             style={{
               display: "inline-flex",
               alignItems: "center",
+              justifyContent: "center",
               gap: "8px",
-              padding: "12px 24px",
-              border: "none",
-              borderRadius: "8px",
-              cursor: "pointer",
-              background: "#16a34a",
-              color: "#ffffff",
-              fontWeight: "600",
             }}
           >
             <Send size={17} />
@@ -402,3 +345,4 @@ function InterviewTest() {
 }
 
 export default InterviewTest;
+
