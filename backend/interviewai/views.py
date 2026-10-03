@@ -1,4 +1,4 @@
-```python
+
 import re
 
 from django.db import transaction
