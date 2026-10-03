@@ -1,4 +1,4 @@
-
+```jsx
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
@@ -33,10 +33,19 @@ function InterviewTest() {
 
         const response = await api.get(`/interviews?id=${id}`);
 
-        setInterview(response.data);
+        /*
+         * Backend returns:
+         * {
+         *   interview: {...},
+         *   questions: [...]
+         * }
+         */
+        setInterview(response.data.interview || null);
         setQuestions(response.data.questions || []);
       } catch (err) {
-        console.error(err);
+        console.error("LOAD INTERVIEW ERROR:", err);
+        console.error("STATUS:", err.response?.status);
+        console.error("RESPONSE DATA:", err.response?.data);
 
         setError(
           err.response?.data?.message ||
@@ -57,11 +66,8 @@ function InterviewTest() {
     }));
   };
 
-  const startIndex =
-    (currentPage - 1) * QUESTIONS_PER_PAGE;
-
-  const endIndex =
-    startIndex + QUESTIONS_PER_PAGE;
+  const startIndex = (currentPage - 1) * QUESTIONS_PER_PAGE;
+  const endIndex = startIndex + QUESTIONS_PER_PAGE;
 
   const currentQuestions = questions.slice(
     startIndex,
@@ -94,7 +100,7 @@ function InterviewTest() {
     if (submitting) return;
 
     const unansweredCount = questions.filter(
-      (_, index) => !answers[index + 1]
+      (question) => !answers[question.question_number]
     ).length;
 
     const confirmed = window.confirm(
@@ -108,12 +114,29 @@ function InterviewTest() {
     try {
       setSubmitting(true);
       setError("");
-      console.log("SUBMIT ANSWERS:", answers);
+
+      console.log(
+        "SUBMIT ANSWERS:",
+        JSON.stringify(answers, null, 2)
+      );
+
+      const payload = {
+        answers,
+      };
+
+      console.log(
+        "SUBMIT PAYLOAD:",
+        JSON.stringify(payload, null, 2)
+      );
+
       const response = await api.post(
         `/interviews/${id}/submit`,
-        {
-          answers,
-        }
+        payload
+      );
+
+      console.log(
+        "SUBMIT SUCCESS:",
+        response.data
       );
 
       navigate(`/interviews/${id}/result`, {
@@ -123,7 +146,15 @@ function InterviewTest() {
         },
       });
     } catch (err) {
-      console.error(err);
+      console.error("SUBMIT ERROR:", err);
+      console.error(
+        "STATUS:",
+        err.response?.status
+      );
+      console.error(
+        "RESPONSE DATA:",
+        err.response?.data
+      );
 
       setError(
         err.response?.data?.message ||
@@ -138,7 +169,9 @@ function InterviewTest() {
     return (
       <div className="interview-loading">
         <LoaderCircle size={22} />
-        <span>Loading interview questions...</span>
+        <span>
+          Loading interview questions...
+        </span>
       </div>
     );
   }
@@ -146,14 +179,18 @@ function InterviewTest() {
   if (error && !questions.length) {
     return (
       <div className="interview-error">
-        <h2>Unable to load the interview</h2>
+        <h2>
+          Unable to load the interview
+        </h2>
 
         <p>{error}</p>
 
         <button
           type="button"
           className="interview-back-button"
-          onClick={() => navigate("/interviews")}
+          onClick={() =>
+            navigate("/interviews")
+          }
         >
           <ArrowLeft size={17} />
           Back to Interviews
@@ -167,7 +204,9 @@ function InterviewTest() {
       <button
         type="button"
         className="interview-back-button"
-        onClick={() => navigate("/interviews")}
+        onClick={() =>
+          navigate("/interviews")
+        }
       >
         <ArrowLeft size={17} />
         Back to Interviews
@@ -175,15 +214,19 @@ function InterviewTest() {
 
       <div className="interview-header-card">
         <h1>
-          {interview?.title || "Mock Interview"}
+          {interview?.title ||
+            "Mock Interview"}
         </h1>
 
         <p>
-          {interview?.interview_type || "Technical"}
+          {interview?.interview_type ||
+            "Technical"}
           {" · "}
-          {interview?.subject || "General"}
+          {interview?.subject ||
+            "General"}
           {" · "}
-          {interview?.difficulty || "Medium"}
+          {interview?.difficulty ||
+            "Medium"}
         </p>
 
         <div className="interview-progress">
@@ -193,8 +236,11 @@ function InterviewTest() {
 
           <span>
             Questions {startIndex + 1}–
-            {Math.min(endIndex, questions.length)} of{" "}
-            {questions.length}
+            {Math.min(
+              endIndex,
+              questions.length
+            )}{" "}
+            of {questions.length}
           </span>
         </div>
       </div>
@@ -207,7 +253,8 @@ function InterviewTest() {
 
       <div className="interview-questions">
         {currentQuestions.map((item) => {
-          const questionNumber = item.question_number;
+          const questionNumber =
+            item.question_number;
 
           const selectedAnswer =
             answers[questionNumber] || "";
@@ -246,7 +293,10 @@ function InterviewTest() {
           return (
             <div
               className="interview-question-card"
-              key={item.id || questionNumber}
+              key={
+                item.id ||
+                questionNumber
+              }
             >
               <h3 className="interview-question-number">
                 Question {questionNumber}
@@ -261,7 +311,8 @@ function InterviewTest() {
                   <label
                     key={option.key}
                     className={`interview-option ${
-                      selectedAnswer === option.key
+                      selectedAnswer ===
+                      option.key
                         ? "selected"
                         : ""
                     }`}
@@ -271,7 +322,8 @@ function InterviewTest() {
                       name={`question-${questionNumber}`}
                       value={option.key}
                       checked={
-                        selectedAnswer === option.key
+                        selectedAnswer ===
+                        option.key
                       }
                       onChange={() =>
                         handleAnswer(
@@ -303,7 +355,10 @@ function InterviewTest() {
           type="button"
           className="interview-nav-button interview-prev-button"
           onClick={goToPreviousPage}
-          disabled={currentPage === 1 || submitting}
+          disabled={
+            currentPage === 1 ||
+            submitting
+          }
         >
           ← Previous
         </button>
@@ -346,3 +401,4 @@ function InterviewTest() {
 }
 
 export default InterviewTest;
+```
