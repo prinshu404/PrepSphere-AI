@@ -1,4 +1,4 @@
-```jsx
+
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
 import DashboardSidebar from "./components/dashboard/DashboardSidebar";
