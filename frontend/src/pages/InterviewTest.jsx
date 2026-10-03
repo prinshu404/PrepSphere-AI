@@ -108,7 +108,7 @@ function InterviewTest() {
     try {
       setSubmitting(true);
       setError("");
-console.log("SUBMIT ANSWERS:", answers);
+      console.log("SUBMIT ANSWERS:", answers);
       const response = await api.post(
         `/interviews/${id}/submit`,
         {
