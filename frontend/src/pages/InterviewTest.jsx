@@ -1,3 +1,4 @@
+```jsx
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
@@ -18,6 +19,7 @@ function InterviewTest() {
   const [answers, setAnswers] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
   const QUESTIONS_PER_PAGE = 10;
@@ -88,7 +90,9 @@ function InterviewTest() {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    if (submitting) return;
+
     const unansweredCount = questions.filter(
       (_, index) => !answers[index + 1]
     ).length;
@@ -101,9 +105,33 @@ function InterviewTest() {
 
     if (!confirmed) return;
 
-    alert(
-      "Interview submission will be connected in the next step."
-    );
+    try {
+      setSubmitting(true);
+      setError("");
+
+      const response = await api.post(
+        `/interviews/${id}/submit`,
+        {
+          answers,
+        }
+      );
+
+      navigate(`/interviews/${id}/result`, {
+        state: {
+          result: response.data,
+          interview,
+        },
+      });
+    } catch (err) {
+      console.error(err);
+
+      setError(
+        err.response?.data?.message ||
+          "Unable to submit the interview. Please try again."
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (loading) {
@@ -115,7 +143,7 @@ function InterviewTest() {
     );
   }
 
-  if (error) {
+  if (error && !questions.length) {
     return (
       <div className="interview-error">
         <h2>Unable to load the interview</h2>
@@ -136,7 +164,6 @@ function InterviewTest() {
 
   return (
     <div className="interview-test-page">
-      {/* Back Button */}
       <button
         type="button"
         className="interview-back-button"
@@ -146,7 +173,6 @@ function InterviewTest() {
         Back to Interviews
       </button>
 
-      {/* Interview Header */}
       <div className="interview-header-card">
         <h1>
           {interview?.title || "Mock Interview"}
@@ -173,7 +199,12 @@ function InterviewTest() {
         </div>
       </div>
 
-      {/* Questions */}
+      {error && (
+        <div className="interview-error">
+          <p>{error}</p>
+        </div>
+      )}
+
       <div className="interview-questions">
         {currentQuestions.map((item) => {
           const questionNumber =
@@ -183,22 +214,10 @@ function InterviewTest() {
             answers[questionNumber] || "";
 
           const options = [
-            {
-              key: "A",
-              text: item.option_a,
-            },
-            {
-              key: "B",
-              text: item.option_b,
-            },
-            {
-              key: "C",
-              text: item.option_c,
-            },
-            {
-              key: "D",
-              text: item.option_d,
-            },
+            { key: "A", text: item.option_a },
+            { key: "B", text: item.option_b },
+            { key: "C", text: item.option_c },
+            { key: "D", text: item.option_d },
           ];
 
           return (
@@ -257,13 +276,12 @@ function InterviewTest() {
         })}
       </div>
 
-      {/* Navigation */}
       <div className="interview-navigation">
         <button
           type="button"
           className="interview-nav-button interview-prev-button"
           onClick={goToPreviousPage}
-          disabled={currentPage === 1}
+          disabled={currentPage === 1 || submitting}
         >
           ← Previous
         </button>
@@ -273,6 +291,7 @@ function InterviewTest() {
             type="button"
             className="interview-nav-button interview-next-button"
             onClick={goToNextPage}
+            disabled={submitting}
           >
             Next →
           </button>
@@ -281,9 +300,22 @@ function InterviewTest() {
             type="button"
             className="interview-submit-button"
             onClick={handleSubmit}
+            disabled={submitting}
           >
-            <Send size={17} />
-            Submit Interview
+            {submitting ? (
+              <>
+                <LoaderCircle
+                  size={17}
+                  className="interview-submit-spinner"
+                />
+                Submitting...
+              </>
+            ) : (
+              <>
+                <Send size={17} />
+                Submit Interview
+              </>
+            )}
           </button>
         )}
       </div>
@@ -292,3 +324,4 @@ function InterviewTest() {
 }
 
 export default InterviewTest;
+```
