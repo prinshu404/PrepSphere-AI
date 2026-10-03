@@ -1,7 +1,8 @@
-
+```jsx
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
-import DashboardLayout from "./components/dashboard/DashboardLayout";
+import DashboardSidebar from "./components/dashboard/DashboardSidebar";
+import DashboardNavbar from "./components/dashboard/DashboardNavbar";
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -10,6 +11,20 @@ import Interviews from "./pages/Interviews";
 import InterviewTest from "./pages/InterviewTest";
 import InterviewResult from "./pages/InterviewResult";
 import Resume from "./pages/Resume";
+
+function DashboardPage({ children }) {
+  return (
+    <div className="dashboard-page">
+      <DashboardSidebar />
+
+      <div className="dashboard-main">
+        <DashboardNavbar />
+
+        <main>{children}</main>
+      </div>
+    </div>
+  );
+}
 
 function App() {
   return (
@@ -23,9 +38,9 @@ function App() {
         <Route
           path="/dashboard"
           element={
-            <DashboardLayout>
+            <DashboardPage>
               <Dashboard />
-            </DashboardLayout>
+            </DashboardPage>
           }
         />
 
@@ -33,27 +48,28 @@ function App() {
         <Route
           path="/interviews"
           element={
-            <DashboardLayout>
+            <DashboardPage>
               <Interviews />
-            </DashboardLayout>
+            </DashboardPage>
           }
         />
 
         <Route
           path="/interviews/:id"
           element={
-            <DashboardLayout>
+            <DashboardPage>
               <InterviewTest />
-            </DashboardLayout>
+            </DashboardPage>
           }
         />
 
+        {/* Interview Result */}
         <Route
           path="/interviews/:id/result"
           element={
-            <DashboardLayout>
+            <DashboardPage>
               <InterviewResult />
-            </DashboardLayout>
+            </DashboardPage>
           }
         />
 
@@ -61,13 +77,13 @@ function App() {
         <Route
           path="/resume"
           element={
-            <DashboardLayout>
+            <DashboardPage>
               <Resume />
-            </DashboardLayout>
+            </DashboardPage>
           }
         />
 
-        {/* Default route */}
+        {/* Default */}
         <Route
           path="/"
           element={<Navigate to="/dashboard" replace />}
