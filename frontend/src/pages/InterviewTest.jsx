@@ -1,4 +1,4 @@
-
+```jsx
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
@@ -33,7 +33,7 @@ function InterviewTest() {
 
         const response = await api.get(`/interviews?id=${id}`);
 
-        setInterview(response.data.interview);
+        setInterview(response.data);
         setQuestions(response.data.questions || []);
       } catch (err) {
         console.error(err);
@@ -207,17 +207,28 @@ function InterviewTest() {
 
       <div className="interview-questions">
         {currentQuestions.map((item) => {
-          const questionNumber =
-            item.question_number;
+          const questionNumber = item.question_number;
 
           const selectedAnswer =
             answers[questionNumber] || "";
 
           const options = [
-            { key: "A", text: item.option_a },
-            { key: "B", text: item.option_b },
-            { key: "C", text: item.option_c },
-            { key: "D", text: item.option_d },
+            {
+              key: "A",
+              text: item.options?.A || "",
+            },
+            {
+              key: "B",
+              text: item.options?.B || "",
+            },
+            {
+              key: "C",
+              text: item.options?.C || "",
+            },
+            {
+              key: "D",
+              text: item.options?.D || "",
+            },
           ];
 
           return (
@@ -248,8 +259,7 @@ function InterviewTest() {
                       name={`question-${questionNumber}`}
                       value={option.key}
                       checked={
-                        selectedAnswer ===
-                        option.key
+                        selectedAnswer === option.key
                       }
                       onChange={() =>
                         handleAnswer(
