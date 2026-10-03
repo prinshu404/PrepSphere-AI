@@ -1,3 +1,4 @@
+```python
 import re
 
 from django.db import transaction
@@ -145,7 +146,7 @@ def login(request):
             "id": user.id,
             "email": user.email,
             "name": user.first_name,
-        }
+        },
     })
 
 
@@ -178,7 +179,7 @@ def register(request):
             "id": user.id,
             "email": user.email,
             "name": user.first_name,
-        }
+        },
     }, status=201)
 
 
@@ -199,7 +200,7 @@ def dashboard(request):
                 status="Completed"
             ).count(),
             "reports": 0,
-        }
+        },
     })
 
 
@@ -338,7 +339,9 @@ def interviews(request):
             count=50,
             previous_questions=previous_questions,
         )
-    except Exception:
+    except Exception as exc:
+        print("INTERVIEW GENERATION ERROR:", repr(exc))
+
         return Response({
             "message": (
                 "Unable to generate interview questions right now. "
@@ -387,12 +390,15 @@ def interviews(request):
                     question_number=index,
                 )
 
-    except Exception:
+    except Exception as exc:
+        print("INTERVIEW SAVE ERROR:", repr(exc))
+
         return Response({
             "message": (
                 "Unable to save the generated interview. "
                 "Please try again."
-            )
+            ),
+            "error": str(exc),
         }, status=500)
 
     return Response({
@@ -458,118 +464,131 @@ def submit_interview(request, interview_id):
     total_score = 0
     analysis = []
 
-    with transaction.atomic():
-        InterviewAnswer.objects.filter(
-            interview_question__interview=interview
-        ).delete()
+    try:
+        with transaction.atomic():
+            InterviewAnswer.objects.filter(
+                interview_question__interview=interview
+            ).delete()
 
-        for interview_question in interview_questions:
-            question = interview_question.question
+            for interview_question in interview_questions:
+                question = interview_question.question
 
-            question_number = str(
-                interview_question.question_number
-            )
-
-            selected_option = submitted_answers.get(
-                question_number,
-                "",
-            )
-
-            if selected_option is None:
-                selected_option = ""
-
-            selected_option = str(
-                selected_option
-            ).strip().upper()
-
-            if selected_option not in {
-                "",
-                "A",
-                "B",
-                "C",
-                "D",
-            }:
-                selected_option = ""
-
-            if selected_option == "":
-                is_correct = False
-                marks = 0
-                unanswered_count += 1
-
-            elif selected_option == question.correct_option:
-                is_correct = True
-                marks = 1
-                correct_count += 1
-                total_score += 1
-
-            else:
-                is_correct = False
-                marks = -0.5
-                wrong_count += 1
-                total_score -= 0.5
-
-            InterviewAnswer.objects.create(
-                interview_question=interview_question,
-                selected_option=selected_option,
-                is_correct=is_correct,
-                marks=marks,
-            )
-
-            selected_text = ""
-
-            if selected_option == "A":
-                selected_text = question.option_a
-            elif selected_option == "B":
-                selected_text = question.option_b
-            elif selected_option == "C":
-                selected_text = question.option_c
-            elif selected_option == "D":
-                selected_text = question.option_d
-
-            correct_text = ""
-
-            if question.correct_option == "A":
-                correct_text = question.option_a
-            elif question.correct_option == "B":
-                correct_text = question.option_b
-            elif question.correct_option == "C":
-                correct_text = question.option_c
-            elif question.correct_option == "D":
-                correct_text = question.option_d
-
-            analysis.append({
-                "question_number": (
+                question_number = str(
                     interview_question.question_number
-                ),
-                "question": question.question_text,
-                "selected_option": selected_option,
-                "selected_answer": selected_text,
-                "correct_option": question.correct_option,
-                "correct_answer": correct_text,
-                "is_correct": is_correct,
-                "marks": marks,
-                "explanation": question.explanation,
-            })
+                )
 
-        total_questions = len(interview_questions)
+                selected_option = submitted_answers.get(
+                    question_number,
+                    "",
+                )
 
-        percentage = (
-            round(
-                (total_score / total_questions) * 100,
-                2,
+                if selected_option is None:
+                    selected_option = ""
+
+                selected_option = str(
+                    selected_option
+                ).strip().upper()
+
+                if selected_option not in {
+                    "",
+                    "A",
+                    "B",
+                    "C",
+                    "D",
+                }:
+                    selected_option = ""
+
+                if selected_option == "":
+                    is_correct = False
+                    marks = 0
+                    unanswered_count += 1
+
+                elif selected_option == question.correct_option:
+                    is_correct = True
+                    marks = 1
+                    correct_count += 1
+                    total_score += 1
+
+                else:
+                    is_correct = False
+                    marks = -0.5
+                    wrong_count += 1
+                    total_score -= 0.5
+
+                InterviewAnswer.objects.create(
+                    interview_question=interview_question,
+                    selected_option=selected_option,
+                    is_correct=is_correct,
+                    marks=marks,
+                )
+
+                selected_text = ""
+
+                if selected_option == "A":
+                    selected_text = question.option_a
+                elif selected_option == "B":
+                    selected_text = question.option_b
+                elif selected_option == "C":
+                    selected_text = question.option_c
+                elif selected_option == "D":
+                    selected_text = question.option_d
+
+                correct_text = ""
+
+                if question.correct_option == "A":
+                    correct_text = question.option_a
+                elif question.correct_option == "B":
+                    correct_text = question.option_b
+                elif question.correct_option == "C":
+                    correct_text = question.option_c
+                elif question.correct_option == "D":
+                    correct_text = question.option_d
+
+                analysis.append({
+                    "question_number": (
+                        interview_question.question_number
+                    ),
+                    "question": question.question_text,
+                    "selected_option": selected_option,
+                    "selected_answer": selected_text,
+                    "correct_option": question.correct_option,
+                    "correct_answer": correct_text,
+                    "is_correct": is_correct,
+                    "marks": marks,
+                    "explanation": question.explanation,
+                })
+
+            total_questions = len(interview_questions)
+
+            percentage = (
+                round(
+                    (total_score / total_questions) * 100,
+                    2,
+                )
+                if total_questions > 0
+                else 0
             )
-            if total_questions > 0
-            else 0
-        )
 
-        interview.score = total_score
-        interview.status = "Completed"
-        interview.save(
-            update_fields=[
-                "score",
-                "status",
-            ]
-        )
+            interview.score = total_score
+            interview.status = "Completed"
+
+            interview.save(
+                update_fields=[
+                    "score",
+                    "status",
+                ]
+            )
+
+    except Exception as exc:
+        print("INTERVIEW SUBMIT ERROR:", repr(exc))
+
+        return Response({
+            "message": (
+                "Unable to save the interview result. "
+                "Please try again."
+            ),
+            "error": str(exc),
+        }, status=500)
 
     return Response({
         "message": "Interview submitted successfully.",
@@ -964,3 +983,4 @@ def resume_analyze(request):
                 "Please upload a valid PDF or DOCX file."
             )
         }, status=400)
+```
