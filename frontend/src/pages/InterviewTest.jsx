@@ -59,13 +59,33 @@ function InterviewTest() {
     loadInterview();
   }, [id]);
 
-  const handleAnswer = (questionNumber, option) => {
-    setAnswers((current) => ({
+  // const handleAnswer = (questionNumber, option) => {
+  //   setAnswers((current) => ({
+  //     ...current,
+  //     [questionNumber]: option,
+  //   }));
+  // };
+const handleAnswer = (questionNumber, option) => {
+  console.log(
+    "ANSWER SELECTED:",
+    questionNumber,
+    option
+  );
+
+  setAnswers((current) => {
+    const updatedAnswers = {
       ...current,
       [questionNumber]: option,
-    }));
-  };
+    };
 
+    console.log(
+      "UPDATED ANSWERS:",
+      updatedAnswers
+    );
+
+    return updatedAnswers;
+  });
+};
   const startIndex = (currentPage - 1) * QUESTIONS_PER_PAGE;
   const endIndex = startIndex + QUESTIONS_PER_PAGE;
 
