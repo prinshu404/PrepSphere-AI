@@ -983,4 +983,4 @@ def resume_analyze(request):
                 "Please upload a valid PDF or DOCX file."
             )
         }, status=400)
-```
+
