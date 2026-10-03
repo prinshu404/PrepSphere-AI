@@ -1,4 +1,4 @@
-
+```jsx
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
@@ -215,19 +215,31 @@ function InterviewTest() {
           const options = [
             {
               key: "A",
-              text: item.options?.A || "",
+              text:
+                item.options?.A ||
+                item.option_a ||
+                "",
             },
             {
               key: "B",
-              text: item.options?.B || "",
+              text:
+                item.options?.B ||
+                item.option_b ||
+                "",
             },
             {
               key: "C",
-              text: item.options?.C || "",
+              text:
+                item.options?.C ||
+                item.option_c ||
+                "",
             },
             {
               key: "D",
-              text: item.options?.D || "",
+              text:
+                item.options?.D ||
+                item.option_d ||
+                "",
             },
           ];
 
@@ -334,4 +346,4 @@ function InterviewTest() {
 }
 
 export default InterviewTest;
-
+```
