@@ -261,4 +261,3 @@ function InterviewResult() {
 }
 
 export default InterviewResult;
-```
