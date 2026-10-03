@@ -1,4 +1,4 @@
-
+```jsx
 import { Navigate, Route, Routes } from "react-router-dom";
 
 import Home from "./pages/Home";
@@ -7,6 +7,7 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Interviews from "./pages/Interviews";
 import InterviewTest from "./pages/InterviewTest";
+import InterviewResult from "./pages/InterviewResult";
 import Resume from "./pages/Resume";
 
 import DashboardSidebar from "./components/dashboard/DashboardSidebar";
@@ -82,6 +83,16 @@ function App() {
         element={
           <DashboardLayout>
             <InterviewTest />
+          </DashboardLayout>
+        }
+      />
+
+      {/* Interview Result */}
+      <Route
+        path="/interviews/:id/result"
+        element={
+          <DashboardLayout>
+            <InterviewResult />
           </DashboardLayout>
         }
       />
@@ -184,4 +195,4 @@ function App() {
 }
 
 export default App;
-
+```
