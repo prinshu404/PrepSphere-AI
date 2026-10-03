@@ -1,4 +1,3 @@
-```python
 import re
 
 from django.db import transaction
@@ -146,7 +145,7 @@ def login(request):
             "id": user.id,
             "email": user.email,
             "name": user.first_name,
-        },
+        }
     })
 
 
@@ -179,7 +178,7 @@ def register(request):
             "id": user.id,
             "email": user.email,
             "name": user.first_name,
-        },
+        }
     }, status=201)
 
 
@@ -200,7 +199,7 @@ def dashboard(request):
                 status="Completed"
             ).count(),
             "reports": 0,
-        },
+        }
     })
 
 
@@ -339,9 +338,7 @@ def interviews(request):
             count=50,
             previous_questions=previous_questions,
         )
-    except Exception as exc:
-        print("INTERVIEW GENERATION ERROR:", repr(exc))
-
+    except Exception:
         return Response({
             "message": (
                 "Unable to generate interview questions right now. "
@@ -390,15 +387,12 @@ def interviews(request):
                     question_number=index,
                 )
 
-    except Exception as exc:
-        print("INTERVIEW SAVE ERROR:", repr(exc))
-
+    except Exception:
         return Response({
             "message": (
                 "Unable to save the generated interview. "
                 "Please try again."
-            ),
-            "error": str(exc),
+            )
         }, status=500)
 
     return Response({
@@ -464,131 +458,118 @@ def submit_interview(request, interview_id):
     total_score = 0
     analysis = []
 
-    try:
-        with transaction.atomic():
-            InterviewAnswer.objects.filter(
-                interview_question__interview=interview
-            ).delete()
+    with transaction.atomic():
+        InterviewAnswer.objects.filter(
+            interview_question__interview=interview
+        ).delete()
 
-            for interview_question in interview_questions:
-                question = interview_question.question
+        for interview_question in interview_questions:
+            question = interview_question.question
 
-                question_number = str(
+            question_number = str(
+                interview_question.question_number
+            )
+
+            selected_option = submitted_answers.get(
+                question_number,
+                "",
+            )
+
+            if selected_option is None:
+                selected_option = ""
+
+            selected_option = str(
+                selected_option
+            ).strip().upper()
+
+            if selected_option not in {
+                "",
+                "A",
+                "B",
+                "C",
+                "D",
+            }:
+                selected_option = ""
+
+            if selected_option == "":
+                is_correct = False
+                marks = 0
+                unanswered_count += 1
+
+            elif selected_option == question.correct_option:
+                is_correct = True
+                marks = 1
+                correct_count += 1
+                total_score += 1
+
+            else:
+                is_correct = False
+                marks = -0.5
+                wrong_count += 1
+                total_score -= 0.5
+
+            InterviewAnswer.objects.create(
+                interview_question=interview_question,
+                selected_option=selected_option,
+                is_correct=is_correct,
+                marks=marks,
+            )
+
+            selected_text = ""
+
+            if selected_option == "A":
+                selected_text = question.option_a
+            elif selected_option == "B":
+                selected_text = question.option_b
+            elif selected_option == "C":
+                selected_text = question.option_c
+            elif selected_option == "D":
+                selected_text = question.option_d
+
+            correct_text = ""
+
+            if question.correct_option == "A":
+                correct_text = question.option_a
+            elif question.correct_option == "B":
+                correct_text = question.option_b
+            elif question.correct_option == "C":
+                correct_text = question.option_c
+            elif question.correct_option == "D":
+                correct_text = question.option_d
+
+            analysis.append({
+                "question_number": (
                     interview_question.question_number
-                )
+                ),
+                "question": question.question_text,
+                "selected_option": selected_option,
+                "selected_answer": selected_text,
+                "correct_option": question.correct_option,
+                "correct_answer": correct_text,
+                "is_correct": is_correct,
+                "marks": marks,
+                "explanation": question.explanation,
+            })
 
-                selected_option = submitted_answers.get(
-                    question_number,
-                    "",
-                )
+        total_questions = len(interview_questions)
 
-                if selected_option is None:
-                    selected_option = ""
-
-                selected_option = str(
-                    selected_option
-                ).strip().upper()
-
-                if selected_option not in {
-                    "",
-                    "A",
-                    "B",
-                    "C",
-                    "D",
-                }:
-                    selected_option = ""
-
-                if selected_option == "":
-                    is_correct = False
-                    marks = 0
-                    unanswered_count += 1
-
-                elif selected_option == question.correct_option:
-                    is_correct = True
-                    marks = 1
-                    correct_count += 1
-                    total_score += 1
-
-                else:
-                    is_correct = False
-                    marks = -0.5
-                    wrong_count += 1
-                    total_score -= 0.5
-
-                InterviewAnswer.objects.create(
-                    interview_question=interview_question,
-                    selected_option=selected_option,
-                    is_correct=is_correct,
-                    marks=marks,
-                )
-
-                selected_text = ""
-
-                if selected_option == "A":
-                    selected_text = question.option_a
-                elif selected_option == "B":
-                    selected_text = question.option_b
-                elif selected_option == "C":
-                    selected_text = question.option_c
-                elif selected_option == "D":
-                    selected_text = question.option_d
-
-                correct_text = ""
-
-                if question.correct_option == "A":
-                    correct_text = question.option_a
-                elif question.correct_option == "B":
-                    correct_text = question.option_b
-                elif question.correct_option == "C":
-                    correct_text = question.option_c
-                elif question.correct_option == "D":
-                    correct_text = question.option_d
-
-                analysis.append({
-                    "question_number": (
-                        interview_question.question_number
-                    ),
-                    "question": question.question_text,
-                    "selected_option": selected_option,
-                    "selected_answer": selected_text,
-                    "correct_option": question.correct_option,
-                    "correct_answer": correct_text,
-                    "is_correct": is_correct,
-                    "marks": marks,
-                    "explanation": question.explanation,
-                })
-
-            total_questions = len(interview_questions)
-
-            percentage = (
-                round(
-                    (total_score / total_questions) * 100,
-                    2,
-                )
-                if total_questions > 0
-                else 0
+        percentage = (
+            round(
+                (total_score / total_questions) * 100,
+                2,
             )
+            if total_questions > 0
+            else 0
+        )
 
-            interview.score = total_score
-            interview.status = "Completed"
-
-            interview.save(
-                update_fields=[
-                    "score",
-                    "status",
-                ]
-            )
-
-    except Exception as exc:
-        print("INTERVIEW SUBMIT ERROR:", repr(exc))
-
-        return Response({
-            "message": (
-                "Unable to save the interview result. "
-                "Please try again."
-            ),
-            "error": str(exc),
-        }, status=500)
+        interview.score = total_score
+        interview.status = "Completed"
+        interview.save(
+            update_fields=[
+                "score",
+                "status",
+            ]
+        )
 
     return Response({
         "message": "Interview submitted successfully.",
@@ -869,5 +850,117 @@ def analyze_resume_text(text):
 
     if not email_found or not phone_found:
         suggestions.append(
-            "Make sure your em
+            "Make sure your email address and phone number are clearly visible."
+        )
 
+    if missing_keywords:
+        suggestions.append(
+            "Consider adding relevant keywords such as "
+            + ", ".join(missing_keywords[:3])
+            + " when they accurately reflect your experience."
+        )
+
+    if not suggestions:
+        suggestions.append(
+            "Keep your resume focused, measurable, and aligned with the target role."
+        )
+
+    if total_score >= 85:
+        summary = (
+            "Strong ATS compatibility with several relevant resume signals."
+        )
+    elif total_score >= 70:
+        summary = (
+            "Good ATS compatibility with some areas that can be improved."
+        )
+    elif total_score >= 50:
+        summary = (
+            "Moderate ATS compatibility with several areas needing improvement."
+        )
+    else:
+        summary = (
+            "The resume needs improvement in several ATS-related areas."
+        )
+
+    return {
+        "ats_score": total_score,
+        "skills": skills,
+        "missing_keywords": missing_keywords,
+        "sections": detected_sections,
+        "suggestions": suggestions,
+        "summary": summary,
+    }
+
+
+@api_view(["POST"])
+def resume_analyze(request):
+    resume = request.FILES.get("resume")
+
+    if resume is None:
+        return Response({
+            "message": "Please upload a resume file."
+        }, status=400)
+
+    allowed_extensions = (
+        ".pdf",
+        ".doc",
+        ".docx",
+    )
+
+    file_name = resume.name.lower()
+
+    if not file_name.endswith(allowed_extensions):
+        return Response({
+            "message": "Please upload a PDF, DOC, or DOCX resume."
+        }, status=400)
+
+    if resume.size > 5 * 1024 * 1024:
+        return Response({
+            "message": "Resume file must be 5 MB or smaller."
+        }, status=400)
+
+    try:
+        if file_name.endswith(".pdf"):
+            extracted_text = extract_pdf_text(resume)
+
+        elif file_name.endswith(".docx"):
+            extracted_text = extract_docx_text(resume)
+
+        else:
+            return Response({
+                "message": (
+                    "Legacy DOC files are not supported for text extraction yet. "
+                    "Please upload a PDF or DOCX file."
+                )
+            }, status=400)
+
+        extracted_text = clean_resume_text(
+            extracted_text
+        )
+
+        if not extracted_text:
+            return Response({
+                "message": (
+                    "No readable text was found in the resume. "
+                    "Please upload a text-based PDF or DOCX file."
+                )
+            }, status=400)
+
+        analysis = analyze_resume_text(
+            extracted_text
+        )
+
+        return Response({
+            "status": "analyzed",
+            "file_name": resume.name,
+            "file_size": resume.size,
+            **analysis,
+        })
+
+    except Exception:
+        return Response({
+            "message": (
+                "Unable to read this resume. "
+                "Please upload a valid PDF or DOCX file."
+            )
+        }, status=400)
