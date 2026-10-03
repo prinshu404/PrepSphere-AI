@@ -1,5 +1,7 @@
 
-import { Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+
+import DashboardLayout from "./components/dashboard/DashboardLayout";
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -11,27 +13,73 @@ import Resume from "./pages/Resume";
 
 function App() {
   return (
-    <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
+    <BrowserRouter>
+      <Routes>
+        {/* Authentication */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
 
-      <Route path="/dashboard" element={<Dashboard />} />
+        {/* Dashboard */}
+        <Route
+          path="/dashboard"
+          element={
+            <DashboardLayout>
+              <Dashboard />
+            </DashboardLayout>
+          }
+        />
 
-      <Route path="/interviews" element={<Interviews />} />
+        {/* Interviews */}
+        <Route
+          path="/interviews"
+          element={
+            <DashboardLayout>
+              <Interviews />
+            </DashboardLayout>
+          }
+        />
 
-      <Route path="/interviews/:id" element={<InterviewTest />} />
+        <Route
+          path="/interviews/:id"
+          element={
+            <DashboardLayout>
+              <InterviewTest />
+            </DashboardLayout>
+          }
+        />
 
-      <Route
-        path="/interviews/:id/result"
-        element={<InterviewResult />}
-      />
+        <Route
+          path="/interviews/:id/result"
+          element={
+            <DashboardLayout>
+              <InterviewResult />
+            </DashboardLayout>
+          }
+        />
 
-      <Route path="/resume" element={<Resume />} />
+        {/* Resume Analyzer */}
+        <Route
+          path="/resume"
+          element={
+            <DashboardLayout>
+              <Resume />
+            </DashboardLayout>
+          }
+        />
 
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        {/* Default route */}
+        <Route
+          path="/"
+          element={<Navigate to="/dashboard" replace />}
+        />
 
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
-    </Routes>
+        {/* Unknown routes */}
+        <Route
+          path="*"
+          element={<Navigate to="/dashboard" replace />}
+        />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
