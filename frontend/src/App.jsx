@@ -1,8 +1,5 @@
-
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-
-import DashboardSidebar from "./components/dashboard/DashboardSidebar";
-import DashboardNavbar from "./components/dashboard/DashboardNavbar";
+```jsx
+import { Navigate, Route, Routes } from "react-router-dom";
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -12,92 +9,31 @@ import InterviewTest from "./pages/InterviewTest";
 import InterviewResult from "./pages/InterviewResult";
 import Resume from "./pages/Resume";
 
-function DashboardPage({ children }) {
-  return (
-    <div className="dashboard-page">
-      <DashboardSidebar />
-
-      <div className="dashboard-main">
-        <DashboardNavbar />
-
-        <main>{children}</main>
-      </div>
-    </div>
-  );
-}
-
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* Authentication */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
 
-        {/* Dashboard */}
-        <Route
-          path="/dashboard"
-          element={
-            <DashboardPage>
-              <Dashboard />
-            </DashboardPage>
-          }
-        />
+      <Route path="/dashboard" element={<Dashboard />} />
 
-        {/* Interviews */}
-        <Route
-          path="/interviews"
-          element={
-            <DashboardPage>
-              <Interviews />
-            </DashboardPage>
-          }
-        />
+      <Route path="/interviews" element={<Interviews />} />
 
-        <Route
-          path="/interviews/:id"
-          element={
-            <DashboardPage>
-              <InterviewTest />
-            </DashboardPage>
-          }
-        />
+      <Route path="/interviews/:id" element={<InterviewTest />} />
 
-        {/* Interview Result */}
-        <Route
-          path="/interviews/:id/result"
-          element={
-            <DashboardPage>
-              <InterviewResult />
-            </DashboardPage>
-          }
-        />
+      <Route
+        path="/interviews/:id/result"
+        element={<InterviewResult />}
+      />
 
-        {/* Resume Analyzer */}
-        <Route
-          path="/resume"
-          element={
-            <DashboardPage>
-              <Resume />
-            </DashboardPage>
-          }
-        />
+      <Route path="/resume" element={<Resume />} />
 
-        {/* Default */}
-        <Route
-          path="/"
-          element={<Navigate to="/dashboard" replace />}
-        />
+      <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
-        {/* Unknown routes */}
-        <Route
-          path="*"
-          element={<Navigate to="/dashboard" replace />}
-        />
-      </Routes>
-    </BrowserRouter>
+      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+    </Routes>
   );
 }
 
 export default App;
-
+```
